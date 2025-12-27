@@ -1,0 +1,89 @@
+﻿<Page x:Class="Reports.CreateCustomerRequest"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+             ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+             mc:Ignorable="d"
+             FlowDirection="RightToLeft">
+    <Grid Margin="5" VerticalAlignment="Top">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Margin="16 8 -55 8">
+
+                <StackPanel>
+                    <RadioButton x:Name="RB_Shutuf" GroupName="CarOptions" HorizontalAlignment="Right" />
+                    <TextBlock Text="שיתוף" HorizontalAlignment="Left" />
+                </StackPanel>
+                <StackPanel>
+                    <RadioButton x:Name="RB_Mobility" GroupName="CarOptions" HorizontalAlignment="Right" />
+                    <TextBlock Text="מוביליטי" HorizontalAlignment="Left" />
+                </StackPanel>
+                <StackPanel>
+                    <RadioButton x:Name="RB_Colmobil" GroupName="CarOptions" HorizontalAlignment="Right" />
+                    <TextBlock Text="כולמוביל" HorizontalAlignment="Left" />
+                </StackPanel>
+        </StackPanel>
+
+
+
+
+        <!-- Card with form -->
+        <ui:Card Grid.Row="1" Padding="20" Margin="0,0,0,10" Background="Transparent">
+            <StackPanel Orientation="Vertical" >
+
+                <ui:TextBlock Text="פרטי שיוך"
+                           Margin="0,0,0,0"/>
+                <ui:TextBox x:Name="Car"
+                            PreviewTextInput="NumberOnly"
+                            PlaceholderText="מס' רכב"
+                            Margin="0,5"/>
+                <!-- Section Title -->
+                <ui:TextBox x:Name="StartTime"
+                            PlaceholderText="זמן התחלה"
+                         Margin="0,5"/>
+                <!-- Numeric Fields -->
+                <ui:TextBox x:Name="EndTime"
+                            PlaceholderText="זמן סיום"
+                         Margin="0,5" />
+
+                <!-- Section Title -->
+                <ui:TextBlock Text="פרטי לקוח"
+                           Margin="0,10,0,0"/>
+
+                <!-- Regular Text Fields -->
+                <ui:TextBox x:Name="Name"
+                            PlaceholderText="שם לקוח"
+                         Margin="0,5" />
+                <ui:TextBox x:Name="Id" 
+                            PlaceholderText="מס' ת.ז"
+                         Margin="0,5" 
+                         />
+                <ui:TextBox x:Name="Email" 
+                            PlaceholderText="אימייל"
+                            Margin="0,5" 
+                />
+                <ui:TextBox x:Name="AddressName"
+                            PlaceholderText="כתובת"
+                         Margin="0,5" 
+                         />
+
+                <!-- Submit Button -->
+                <ui:Button Content="שלח מייל בקשה"
+                        Margin="0,20,0,0"
+                        HorizontalAlignment="Stretch"
+                        IsDefault="True"
+                        Click="Submit_Click"
+                        Appearance="Primary"
+                        FontWeight="Bold"/>
+            </StackPanel>
+        </ui:Card>
+    </Grid>
+</Page>

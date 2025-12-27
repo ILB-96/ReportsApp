@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net9.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UseWPF>true</UseWPF>
+        <ApplicationIcon>ReportsIcon.ico</ApplicationIcon>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="DocX" Version="5.0.0" />
+      <PackageReference Include="FreeSpire.Doc" Version="12.2.0" />
+      <PackageReference Include="Microsoft.Office.Interop.Outlook" Version="15.0.4797.1004" />
+      <PackageReference Include="Microsoft.Office.Interop.Word" Version="15.0.4797.1004" />
+      <PackageReference Include="WPF-UI" Version="4.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="autotel autograph.docx" />
+      <EmbeddedResource Include="autotel_autograph.docx" />
+      <None Remove="goto_autograph.docx" />
+      <EmbeddedResource Include="goto_autograph.docx" />
+      <None Remove="autotel_agreement.docx" />
+      <EmbeddedResource Include="autotel_agreement.docx" />
+      <None Remove="goto_agreement.docx" />
+      <EmbeddedResource Include="goto_agreement.docx" />
+      <None Remove="goto_reservation.docx" />
+      <EmbeddedResource Include="goto_reservation.docx" />
+      <None Remove="autotel_reservation.docx" />
+      <EmbeddedResource Include="autotel_reservation.docx" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Page Update="AgreementForm.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+      <Page Update="Data.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+    </ItemGroup>
+
+</Project>
