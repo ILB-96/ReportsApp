@@ -1,93 +1,114 @@
-﻿using System.Diagnostics;
+﻿
+using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
 
 namespace Reports
 {
-    public partial class AgreementForm
+    public partial class AgreementForm : Page
     {
         public AgreementForm()
         {
             InitializeComponent();
         }
 
-        private void Submit_Click(object sender, RoutedEventArgs e)
+        private async void Submit_Click(object sender, RoutedEventArgs e)
         {
             var name = Name.Text.Trim();
             var date = Date.Text.Trim();
             var toggle = ToggleOption.IsChecked == true ? "goto" : "autotel";
 
-            // Downloads folder
+            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(date))
+            {
+                MessageBox.Show("נא למלא שם ותאריך.");
+                return;
+            }
+
             var downloadsPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                 "Downloads"
             );
-
-            // File paths
             var docxPath = Path.Combine(downloadsPath, $"Agreement - {name}.docx");
 
-            // Extract embedded template
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = $"Reports.{toggle}_agreement.docx";
+            LoadingOverlay.Visibility = Visibility.Visible;
+            SubmitButton.IsEnabled = false;
+            Name.IsEnabled = false;
+            Date.IsEnabled = false;
+            ToggleOption.IsEnabled = false;
 
-            using (Stream? stream = assembly.GetManifestResourceStream(resourceName))
+            try
             {
-                if (stream == null)
+                await Task.Run(() =>
                 {
-                    MessageBox.Show("Template not found in resources. Check resource name.");
-                    return;
-                }
+                    var assembly = Assembly.GetExecutingAssembly();
+                    var resourceName = $"Reports.{toggle}_agreement.docx";
 
-                // Copy embedded template to a temp file so DocX can load it
-                var tempTemplatePath = Path.Combine(Path.GetTempPath(), "template.docx");
+                    using Stream? stream = assembly.GetManifestResourceStream(resourceName);
+                    if (stream == null)
+                        throw new FileNotFoundException($"Template not found in resources: {resourceName}");
 
-                using (var fileStream = File.Create(tempTemplatePath))
-                {
-                    stream.CopyTo(fileStream);
-                }
+                    var tempTemplatePath = Path.Combine(Path.GetTempPath(), "template.docx");
+                    using (var fileStream = File.Create(tempTemplatePath))
+                        stream.CopyTo(fileStream);
 
-                // Load with DocX
-                var doc = DocX.Load(tempTemplatePath);
-
-                // Replace placeholders
-                doc.ReplaceText(new StringReplaceTextOptions
+                    using (var doc = DocX.Load(tempTemplatePath))
                     {
-                        SearchValue = "<<Name>>",
-                        NewValue = name
-                    }
-                );
-                doc.ReplaceText(new StringReplaceTextOptions{
-                        SearchValue = "<<Date>>", 
-                        NewValue = date
-                    }
-                );
+                        // Make sure the SearchValue matches the literal text in your template
+                        doc.ReplaceText(new StringReplaceTextOptions
+                        {
+                            SearchValue = "<<Name>>",
+                            NewValue = name
+                        });
+                        doc.ReplaceText(new StringReplaceTextOptions
+                        {
+                            SearchValue = "<<Date>>",
+                            NewValue = date
+                        });
 
-                try
+                        try
+                        {
+                            doc.SaveAs(docxPath);
+                        }
+                        catch (IOException ex)
+                        {
+                            throw new IOException("Please close the document and try again.", ex);
+                        }
+                    }
+                });
+
+                Process.Start(new ProcessStartInfo
                 {
-                    // Save updated Word file
-                    doc.SaveAs(docxPath);
-                }
-                catch (IOException)
-                {
-                    MessageBox.Show("Please close the document and try again.",
-                        "File In Use",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-                    return;
-                }
+                    FileName = docxPath,
+                    UseShellExecute = true
+                });
+
+                Name.Text = string.Empty;
+                Date.Text = string.Empty;
             }
-
-            Process.Start(new ProcessStartInfo
+            catch (IOException ioEx)
             {
-                FileName = docxPath,
-                UseShellExecute = true
-            });
-
-            Name.Text = "";
-            Date.Text = "";
+                MessageBox.Show(ioEx.Message, "File In Use",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                LoadingOverlay.Visibility = Visibility.Collapsed;
+                SubmitButton.IsEnabled = true;
+                Name.IsEnabled = true;
+                Date.IsEnabled = true;
+                ToggleOption.IsEnabled = true;
+            }
         }
     }
 }

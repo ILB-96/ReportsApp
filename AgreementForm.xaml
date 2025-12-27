@@ -62,6 +62,7 @@
 
                 <!-- Submit Button -->
                 <ui:Button Content="צור הסכם לקוח"
+                           x:Name="SubmitButton"
                         Margin="0,20,0,0"
                         HorizontalAlignment="Stretch"
                         IsDefault="True"
@@ -70,5 +71,26 @@
                         FontWeight="Bold"/>
             </StackPanel>
         </ui:Card>
+        
+        <Grid x:Name="LoadingOverlay"
+              Grid.RowSpan="2"
+              Visibility="Collapsed"
+              Background="#80000000"
+              IsHitTestVisible="True">
+            <Border CornerRadius="10"
+                    Padding="20"
+                    Background="{DynamicResource ControlFillColorDefaultBrush}"
+                    Opacity="0.97"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <ui:ProgressRing Width="40" Height="40" IsIndeterminate="True" Margin="0,0,0,12"/>
+                    <ui:TextBlock Text="יוצר את ההסכם... רגע סבלנות"
+                                  HorizontalAlignment="Center"
+                                  FontSize="14"
+                                  TextAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Page>
