@@ -40,15 +40,19 @@ public partial class CreateCustomerRequest
         else
             selected = null; // nothing selected
 
-
-        var address = ParseAddress(addressName);
         
+        var address = ParseAddress(addressName);
+
         try
         {
+            LoadingOverlay.Visibility = Visibility.Visible;
+            RootForm.IsEnabled = false;
+
             var outlookType = Type.GetTypeFromProgID("Outlook.Application");
             if (outlookType == null)
             {
-                MessageBox.Show("Outlook is not installed on this computer.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Outlook is not installed on this computer.", "Error", MessageBoxButton.OK,
+                    MessageBoxImage.Error);
                 return;
             }
 
@@ -57,7 +61,7 @@ public partial class CreateCustomerRequest
 
             mail.To = "info@betterway.co.il";
             mail.CC = "yifat.vio@gotoglobal.com";
-            mail.Subject =$"הקמת לקוח - {selected} - {id}";
+            mail.Subject = $"הקמת לקוח - {selected} - {id}";
 
             mail.Display();
             var customBody = $@"
@@ -96,6 +100,11 @@ public partial class CreateCustomerRequest
         catch (Exception ex)
         {
             MessageBox.Show("Error launching Outlook: " + ex.Message);
+        }
+        finally
+        {
+            LoadingOverlay.Visibility = Visibility.Hidden;
+            RootForm.IsEnabled = true;
         }
 
 

@@ -1,11 +1,13 @@
 ﻿using System.Windows.Controls;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
+using Reports.Utilities;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
 
@@ -22,98 +24,119 @@ public partial class SignatureForm
         {
             e.Handled = !MyRegex().IsMatch(e.Text);
         }
-
-        private static void ReplacePlaceholder(DocX doc, string placeholder, string value)
+        
+        private async void Submit_Click(object sender, RoutedEventArgs e)
         {
-            doc.ReplaceText(new StringReplaceTextOptions
-                {
-                    SearchValue = placeholder,
-                    NewValue = value
-                }
-            );
-        }
-
-
-
-        private void Submit_Click(object sender, RoutedEventArgs e)
-        {
-            var report = Report.Text.Trim();
-            var id = Id.Text.Trim();
-            var car = Car.Text.Trim().Replace("-", "");
-            var license = License.Text.Trim();
-            var name = Name.Text.Trim();
-            var address = Address.Text.Trim();
-            var forMunicipality = For.Text.Trim();
+            LoadingOverlay.Visibility = Visibility.Visible;
+            RootForm.IsEnabled = false;
+            
             var toggle = ToggleOption.IsChecked == true ? "goto" : "autotel";
+            
+            var options = new FieldCollectorOptions
+            {
+                // optional Hebrew formatting:
+                BooleanFormatter = b => b ? "כן" : "לא",
+                DateFormatter    = dt => dt.ToString("dd/MM/yyyy", new CultureInfo("he-IL")),
+            };
+
+            var fields = FormFieldCollector.CollectFields(RootForm, options);
 
             // Downloads folder
             var downloadsPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                 "Downloads"
             );
+            Directory.CreateDirectory(downloadsPath);
 
-            // File paths
-            var docxPath = Path.Combine(downloadsPath, $"Signature - {name}.docx");
+            fields.TryGetValue("Name", out var nameValue);
+            var safeName = FileNameUtils.SanitizeFileName(nameValue ?? string.Empty);
+            var docxPath = Path.Combine(downloadsPath, $"Signature - {safeName}.docx");
 
-            // Extract embedded template to memory
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = $"Reports.{toggle}_autograph.docx"; 
-
-            using (Stream? stream = assembly.GetManifestResourceStream(resourceName))
+            try
             {
-                if (stream == null)
+                await Task.Run(() =>
                 {
-                    MessageBox.Show("Template not found in resources. Check resource name.");
-                    return;
-                }
+                    // Extract embedded template to memory
+                    var assembly = Assembly.GetExecutingAssembly();
+                    var resourceName = $"Reports.{toggle}_autograph.docx";
 
-                // Copy embedded template to a temp file so DocX can load it
-                var tempTemplatePath = Path.Combine(Path.GetTempPath(), "template.docx");
-                using (var fileStream = File.Create(tempTemplatePath))
-                {
-                    stream.CopyTo(fileStream);
-                }
 
-                // Load with DocX
-                var doc = DocX.Load(tempTemplatePath);
-                
-                
-                ReplacePlaceholder(doc, "<<For>>", forMunicipality);
-                ReplacePlaceholder(doc, "<<Report>>", report);
-                ReplacePlaceholder(doc, "<<Id>>", id);
-                ReplacePlaceholder(doc, "<<Car>>", car);
-                ReplacePlaceholder(doc, "<<License>>", license);
-                ReplacePlaceholder(doc, "<<Name>>", name);
-                ReplacePlaceholder(doc, "<<Address>>", address);
-                
-                try
+
+                    using (Stream? stream = assembly.GetManifestResourceStream(resourceName))
+                    {
+                        if (stream == null)
+                        {
+                            MessageBox.Show("Template not found in resources. Check resource name.");
+                            return;
+                        }
+
+                        // Copy embedded template to a temp file so DocX can load it
+                        var tempTemplatePath = Path.Combine(Path.GetTempPath(), "signature_template.docx");
+                        using (var fileStream = File.Create(tempTemplatePath))
+                        {
+                            stream.CopyTo(fileStream);
+                        }
+
+                        // Load with DocX
+                        var doc = DocX.Load(tempTemplatePath);
+
+
+                        TokenMerge.ReplaceTokens(doc, fields);
+
+                        try
+                        {
+                            // Save updated Word file
+                            doc.SaveAs(docxPath);
+                        }
+                        catch (IOException)
+                        {
+                            MessageBox.Show("Please close 'Updated.docx' and try again.", "File In Use",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+                            return;
+                        }
+                        finally
+                        {
+                            try
+                            {
+                                File.Delete(tempTemplatePath);
+                            }
+                            catch
+                            {
+                                /* ignore */
+                            }
+                        }
+                    }
+                });
+
+
+                // Open the generated file
+                Process.Start(new ProcessStartInfo
                 {
-                    // Save updated Word file
-                    doc.SaveAs(docxPath);
-                }
-                catch (IOException)
-                {
-                    MessageBox.Show("Please close 'Updated.docx' and try again.", "File In Use", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
+                    FileName = docxPath,
+                    UseShellExecute = true
+                });
+
+
+                foreach (var tb in FormFieldCollector.FindVisualChildren<TextBox>(RootForm))
+                    tb.Clear();
             }
-            
-            
-    
-            // Open the generated file
-            Process.Start(new ProcessStartInfo
+            catch (IOException ioEx)
             {
-                FileName = docxPath,
-                UseShellExecute = true
-            });
-            
-            
-            Report.Text = "";
-            Id.Text = "";
-            Car.Text = "";
-            License.Text = "";
-            Name.Text = "";
-            Address.Text = "";
+                MessageBox.Show(ioEx.Message, "File In Use",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                LoadingOverlay.Visibility = Visibility.Collapsed;
+                RootForm.IsEnabled = true;
+            }
+
         }
         
         [GeneratedRegex("^[0-9-]+$")]

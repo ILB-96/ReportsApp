@@ -1,9 +1,9 @@
 ﻿
-using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Threading.Tasks;
+
+using Reports.Utilities;
 using System.Windows;
 using System.Windows.Controls;
 using Xceed.Document.NET;
@@ -20,26 +20,30 @@ namespace Reports
 
         private async void Submit_Click(object sender, RoutedEventArgs e)
         {
-            var name = Name.Text.Trim();
-            var date = Date.Text.Trim();
             var toggle = ToggleOption.IsChecked == true ? "goto" : "autotel";
-
-            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(date))
+            
+            var options = new FieldCollectorOptions
             {
-                MessageBox.Show("נא למלא שם ותאריך.");
-                return;
-            }
+                // Hebrew yes/no example for booleans:
+                BooleanFormatter = b => b ? "Yes" : "No",
+                // Date format example:
+                DateFormatter = dt => dt.ToString("dd/MM/yyyy"),
+            };
+            var fields = FormFieldCollector.CollectFields(RootForm, options);
+            
 
             var downloadsPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                 "Downloads"
             );
-            var docxPath = Path.Combine(downloadsPath, $"Agreement - {name}.docx");
+            
+            fields.TryGetValue("Name", out var nameValue);
+            var safeName = FileNameUtils.SanitizeFileName(nameValue ?? string.Empty);
+            
+            var docxPath = Path.Combine(downloadsPath, $"Agreement - {safeName}.docx");
 
             LoadingOverlay.Visibility = Visibility.Visible;
-            SubmitButton.IsEnabled = false;
-            Name.IsEnabled = false;
-            Date.IsEnabled = false;
+            RootForm.IsEnabled = false;
             ToggleOption.IsEnabled = false;
 
             try
@@ -53,23 +57,13 @@ namespace Reports
                     if (stream == null)
                         throw new FileNotFoundException($"Template not found in resources: {resourceName}");
 
-                    var tempTemplatePath = Path.Combine(Path.GetTempPath(), "template.docx");
+                    var tempTemplatePath = Path.Combine(Path.GetTempPath(), "agreement_template.docx");
                     using (var fileStream = File.Create(tempTemplatePath))
                         stream.CopyTo(fileStream);
 
                     using (var doc = DocX.Load(tempTemplatePath))
                     {
-                        // Make sure the SearchValue matches the literal text in your template
-                        doc.ReplaceText(new StringReplaceTextOptions
-                        {
-                            SearchValue = "<<Name>>",
-                            NewValue = name
-                        });
-                        doc.ReplaceText(new StringReplaceTextOptions
-                        {
-                            SearchValue = "<<Date>>",
-                            NewValue = date
-                        });
+                        TokenMerge.ReplaceTokens(doc, fields);
 
                         try
                         {
@@ -79,6 +73,10 @@ namespace Reports
                         {
                             throw new IOException("Please close the document and try again.", ex);
                         }
+                        finally
+                        {
+                            try { File.Delete(tempTemplatePath); } catch { /* ignore */ }
+                        }
                     }
                 });
 
@@ -87,9 +85,10 @@ namespace Reports
                     FileName = docxPath,
                     UseShellExecute = true
                 });
+                
+                foreach (var tb in FormFieldCollector.FindVisualChildren<TextBox>(RootForm))
+                    tb.Clear();
 
-                Name.Text = string.Empty;
-                Date.Text = string.Empty;
             }
             catch (IOException ioEx)
             {
@@ -104,9 +103,7 @@ namespace Reports
             finally
             {
                 LoadingOverlay.Visibility = Visibility.Collapsed;
-                SubmitButton.IsEnabled = true;
-                Name.IsEnabled = true;
-                Date.IsEnabled = true;
+                RootForm.IsEnabled = true;
                 ToggleOption.IsEnabled = true;
             }
         }
