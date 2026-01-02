@@ -48,7 +48,7 @@ namespace Reports
                         Clipboard.SetDataObject(data, true);
 
                         // 6) Success overlay
-                        await ShowOverlayAsync(true, $"תבנית {brand} הועתקה ללוח. אפשר להדביק ל‑Word/Outlook/WhatsApp Web.");
+                        await ShowOverlayAsync(true, $"תבנית {brand} הועתקה ללוח. אפשר להדביק.");
                     }
                     catch (Exception ex)
                     {
