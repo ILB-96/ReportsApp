@@ -77,6 +77,15 @@
                         <ui:SymbolIcon Symbol="VehicleCarParking16"/>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
+                <ui:NavigationViewItem Content="קיצורים"
+                                       Tag="Shortcuts"
+                                       TargetPageType="{x:Type reports:ShortcutsPage}"
+                                       NavigationCacheMode="Enabled"
+                                       FocusVisualStyle="{x:Null}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Copy16"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>
         </ui:NavigationView>
     </Grid>

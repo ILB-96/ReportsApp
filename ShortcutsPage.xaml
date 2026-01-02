@@ -1,0 +1,89 @@
+﻿
+<Page x:Class="Reports.ShortcutsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas/lepo.co/wpfui/2022/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:controls="http://schemas.lepo.co/wpfui/2022/xaml"
+      mc:Ignorable="d"
+      FlowDirection="RightToLeft"
+      Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+      Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+
+    <!-- Storyboards must be accessible in the Page.Resources scope -->
+    <Page.Resources>
+        <!-- Show: fade in + slide down -->
+        <Storyboard x:Key="ShowOverlayStoryboard">
+            <DoubleAnimation Storyboard.TargetName="OverlayBanner"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0" To="1" Duration="0:0:0.15"/>
+            <DoubleAnimation Storyboard.TargetName="OverlayBanner"
+                             Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                             From="-24" To="0" Duration="0:0:0.18"/>
+        </Storyboard>
+
+        <!-- Hide: fade out + slide up -->
+        <Storyboard x:Key="HideOverlayStoryboard">
+            <DoubleAnimation Storyboard.TargetName="OverlayBanner"
+                             Storyboard.TargetProperty="Opacity"
+                             From="1" To="0" Duration="0:0:0.20"/>
+            <DoubleAnimation Storyboard.TargetName="OverlayBanner"
+                             Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                             From="0" To="-24" Duration="0:0:0.20"/>
+        </Storyboard>
+    </Page.Resources>
+
+    <!-- Use a Border to provide page padding -->
+    
+    <Border Padding="16">
+        <Grid x:Name="RootGrid">
+            <!-- Buttons stacked with spacing (optional) -->
+
+            <StackPanel Orientation="Vertical" VerticalAlignment="Top">
+                <controls:Button x:Name="PaidGotoBtn"
+                                 Tag="goto"
+                                 Content="דוח שולם גוטו"
+                                 HorizontalAlignment="Stretch"
+                                 Appearance="Primary"
+                                 FontWeight="Bold"
+                                 Click="Paid_Click"
+                                 Margin="0,0,0,8"/>
+
+                <controls:Button x:Name="PaidAutotelBtn"
+                                 Tag="autotel"
+                                 Content="דוח שולם אוטותל"
+                                 HorizontalAlignment="Stretch"
+                                 Appearance="Primary"
+                                 FontWeight="Bold"
+                                 Click="Paid_Click"/>
+            </StackPanel>
+
+
+            <!-- Overlay host (unchanged) -->
+            <Grid x:Name="OverlayHost" IsHitTestVisible="False">
+                <Border x:Name="OverlayBanner"
+                        Visibility="Collapsed"
+                        CornerRadius="8"
+                        Padding="10"
+                        Margin="0,8,0,0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Top"
+                        Opacity="0"
+                        RenderTransformOrigin="0.5,0">
+                    <Border.RenderTransform>
+                        <TranslateTransform Y="-24"/>
+                    </Border.RenderTransform>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8,2">
+                        <TextBlock x:Name="OverlayIcon"
+                                   Text="✔"
+                                   FontSize="16"
+                                   Margin="0,0,8,0"/>
+                        <TextBlock x:Name="OverlayText" FontSize="14"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </Border>
+
+</Page>

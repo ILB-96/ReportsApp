@@ -19,6 +19,8 @@
 
     <ItemGroup>
       <None Remove="autotel autograph.docx" />
+      <Resource Include="Assets\goto_header.png" />
+      <Resource Include="Assets\goto_paid_fine.html" />
       <EmbeddedResource Include="autotel_autograph.docx" />
       <None Remove="goto_autograph.docx" />
       <EmbeddedResource Include="goto_autograph.docx" />
@@ -30,6 +32,14 @@
       <EmbeddedResource Include="goto_reservation.docx" />
       <None Remove="autotel_reservation.docx" />
       <EmbeddedResource Include="autotel_reservation.docx" />
+      <None Remove="goto_paid_fine.html" />
+      <None Remove="goto_header.png" />
+      <None Remove="goto_footer.png" />
+      <None Remove="Assets\autotel_paid_fine.html" />
+      <Resource Include="Assets\autotel_paid_fine.html" />
+      <None Remove="Assets\autotel_footer.png" />
+      <None Remove="Assets\autotel_header.png" />
+      <Resource Include="Assets\autotel_header.png" />
     </ItemGroup>
 
     <ItemGroup>
