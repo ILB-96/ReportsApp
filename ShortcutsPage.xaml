@@ -29,17 +29,9 @@
                              Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
                              From="0" To="-24" Duration="0:0:0.20"/>
         </Storyboard>
-
-        <!-- Optional: shared style for shortcut buttons -->
-        <Style x:Key="ShortcutButtonStyle" TargetType="ui:Button">
-            <Setter Property="Appearance" Value="Info"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="VerticalAlignment" Value="Stretch"/>
-            <Setter Property="MinHeight" Value="44"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Margin" Value="8"/>
-        </Style>
-    </Page.Resources>
+        
+        </Page.Resources>
+        
 
     <!-- Outer padding via Border -->
     <Border Padding="16">
@@ -77,6 +69,7 @@
                         <!-- GoTo: paid fine -->
                         <ui:Button  Appearance="Info"
                                    Tag="goto"
+                                   FontWeight="SemiBold"
                                    Click="Paid_Click">
                             <StackPanel Orientation="Horizontal">
                                 <ui:SymbolIcon Symbol="ClipboardTaskAdd24" Margin="0,0,4,0"/>
@@ -86,7 +79,11 @@
 
                         <!-- Autotel: paid fine -->
                         <ui:Button Appearance="Info"
+                                   Background="DarkOrange"
                                    Tag="autotel"
+                                   FontWeight="SemiBold"
+                                   MouseOverBackground="Orange"
+                                   PressedBackground="#FFA65D"
                                    Click="Paid_Click">
                             <StackPanel Orientation="Horizontal">
                                 <ui:SymbolIcon Symbol="ClipboardTaskAdd24" Margin="0,0,4,0"/>
