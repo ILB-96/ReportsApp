@@ -7,9 +7,9 @@ using Xceed.Words.NET;
 
 namespace Reports
 {
-    public partial class ss
+    public partial class Data
     {
-        public ss()
+        public Data()
         {
             InitializeComponent();
         }
