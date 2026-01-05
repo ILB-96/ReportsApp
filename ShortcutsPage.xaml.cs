@@ -16,8 +16,20 @@ namespace Reports
         }
 
 
+        private async void Transport_Click(object sender, RoutedEventArgs e)
+        {
+            string htmlPath   = $"Assets/transport_fine.html";
+            string html = LoadTextResource(htmlPath);
+            
+            var data = new DataObject();
+            data.SetData(DataFormats.Html, BuildClipboardHtml(html));
+            data.SetData(DataFormats.UnicodeText, HtmlToPlainText(html));
+            Clipboard.SetDataObject(data, true);
 
-        
+            // 6) Success overlay
+            await ShowOverlayAsync(true, $"תבנית תחבצ הועתקה ללוח. אפשר להדביק.");
+        }
+
         private async void Paid_Click(object sender, RoutedEventArgs e)
                 {
                     string brand = (sender as FrameworkElement)?.Tag?.ToString()?.Trim().ToLowerInvariant();

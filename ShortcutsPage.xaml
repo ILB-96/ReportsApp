@@ -56,6 +56,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition />
                     </Grid.RowDefinitions>
 
                     <!-- Optional small hint row -->
@@ -65,12 +66,13 @@
                     </StackPanel>
 
                     <!-- Shortcuts grid -->
-                    <UniformGrid Grid.Row="1" Columns="2">
+                    <UniformGrid Grid.Row="2" Columns="2">
                         <!-- GoTo: paid fine -->
                         <ui:Button  Appearance="Info"
                                    Tag="goto"
                                    FontWeight="SemiBold"
-                                   Click="Paid_Click">
+                                   Click="Paid_Click"
+                                   Margin="0 6">
                             <StackPanel Orientation="Horizontal">
                                 <ui:SymbolIcon Symbol="ClipboardTaskAdd24" Margin="0,0,4,0"/>
                                 <TextBlock Text="דוח שולם – גוטו"/>
@@ -90,7 +92,18 @@
                                 <TextBlock Text="דוח שולם – אוטותל"/>
                             </StackPanel>
                         </ui:Button>
-                        
+                        <ui:Button Appearance="Info"
+                                   Background="#0E7490"
+                                   Tag="all"
+                                   FontWeight="SemiBold"
+                                   MouseOverBackground="#1198B8"
+                                   PressedBackground="#14B7D6"
+                                   Click="Transport_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="ClipboardTaskAdd24" Margin="0,0,4,0"/>
+                                <TextBlock Text="הסבת תחב״צ"/>
+                            </StackPanel>
+                        </ui:Button>
                     </UniformGrid>
                 </Grid>
             </ui:Card>

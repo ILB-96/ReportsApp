@@ -40,6 +40,9 @@
       <None Remove="Assets\autotel_footer.png" />
       <None Remove="Assets\autotel_header.png" />
       <Resource Include="Assets\autotel_header.png" />
+      <None Remove="Assets\transport_fine.html" />
+      <Resource Include="Assets\not_transport_fine.html" />
+      <Resource Include="Assets\transport_fine.html" />
     </ItemGroup>
 
     <ItemGroup>
