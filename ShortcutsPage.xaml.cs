@@ -32,7 +32,7 @@ namespace Reports
 
         private async void Paid_Click(object sender, RoutedEventArgs e)
                 {
-                    string brand = (sender as FrameworkElement)?.Tag?.ToString()?.Trim().ToLowerInvariant();
+                    var brand = (sender as FrameworkElement)?.Tag?.ToString()?.Trim().ToLowerInvariant();
                     if (string.IsNullOrWhiteSpace(brand))
                     {
                         await ShowOverlayAsync(false, "שגיאה: לא זוהה מותג הכפתור (Tag).");

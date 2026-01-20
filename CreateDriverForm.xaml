@@ -1,0 +1,174 @@
+﻿<Page x:Class="Reports.CreateDriverForm"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             FlowDirection="RightToLeft"
+             d:DesignHeight="400"
+             d:DesignWidth="300"
+             ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+             mc:Ignorable="d"
+             >
+    <Grid Margin="5" VerticalAlignment="Top" >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid HorizontalAlignment="Center" Margin="0 16 0 16" x:Name="TogglePanel" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <ui:TextBlock Text="אוטותל" 
+                          VerticalAlignment="Center" 
+                          HorizontalAlignment="Right"
+                          Margin="0,0,10,0"
+                          Grid.Column="0"/>
+
+            <ui:ToggleSwitch x:Name="ToggleOption"
+                             Width="50"
+                             Height="28"
+                             IsChecked="False"
+                             VerticalAlignment="Center"
+                             Grid.Column="1"/>
+
+            <ui:TextBlock Text="גוטו"
+                          VerticalAlignment="Center"
+                          HorizontalAlignment="Left"
+                          Margin="10,0,0,0"
+                          Grid.Column="2"/>
+        </Grid>
+
+        <!-- Card with form -->
+        <ui:Card Grid.Row="1" Padding="20" Margin="0,0,0,10" Background="Transparent" x:Name="InputPanel">
+            <StackPanel Orientation="Vertical" >
+                
+                <!-- Regular Text Fields -->
+                <ui:TextBox x:Name="Url" 
+                            PlaceholderText="כתובת קייס"
+                         Margin="0,5"
+                         />
+                
+                <ui:TextBox x:Name="Cookies"
+                            PlaceholderText="Cookie"
+                            Margin="0,5" 
+                />
+
+                <!-- Submit Button -->
+                <ui:Button Content="שלח"
+                        Margin="0,20,0,0"
+                        HorizontalAlignment="Stretch"
+                        IsDefault="True"
+                        Click="Submit_Click"
+                        Appearance="Primary"
+                        FontWeight="Bold"/>
+            </StackPanel>
+        </ui:Card>
+        <ui:Card Grid.Row="1" Padding="20" Margin="0,0,0,10" Background="Transparent" x:Name="DataPanel" Visibility="Collapsed">
+            <StackPanel Orientation="Vertical" >
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <TextBlock Text="ליסינג: " VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <ui:TextBox x:Name="IsLeasing" Width="200"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <TextBlock Text="תאריך התחלה: " VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <ui:TextBox x:Name="ReportStartDateBox" Width="200"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <TextBlock Text="תאריך סיום: " VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <ui:TextBox x:Name="ReportEndDateBox" Width="200"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <TextBlock Text="לוחית רישוי: " VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <ui:TextBox x:Name="CarLicenseBox" Width="200"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <TextBlock Text="מספר הזמנה: " VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <ui:TextBox x:Name="ReservationNumberBox" Width="200"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <TextBlock Text="מספר דוח: " VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <ui:TextBox x:Name="ReportNumberBox" Width="200"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <TextBlock Text="שם מלא: " VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <ui:TextBox x:Name="AccountFullNameBox" Width="200"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <TextBlock Text="תעודת זהות: " VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <ui:TextBox x:Name="DriverIdBox" Width="200"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <TextBlock Text="רישיון נהיגה: " VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <ui:TextBox x:Name="DriverLicenseBox" Width="200"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <TextBlock Text="אימייל: " VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <ui:TextBox x:Name="EmailBox" Width="200"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <TextBlock Text="טלפון: " VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <ui:TextBox x:Name="PhoneBox" Width="200"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <TextBlock Text="כתובת: " VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <ui:TextBox x:Name="AddressBox" Width="200"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <TextBlock Text="מספר בית: " VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <ui:TextBox x:Name="HouseBox" Width="200"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <TextBlock Text="עיר: " VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <ui:TextBox x:Name="CityBox" Width="200"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <TextBlock Text="מיקוד: " VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <ui:TextBox x:Name="PostalCodeBox" Width="200"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <TextBlock Text="תאריך יצירה: " VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <ui:TextBox x:Name="CreatedOnBox" Width="200"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <TextBlock Text="קישור לרישיון: " VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <ui:TextBox x:Name="LicenseLinkBox" Width="200"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,5">
+                    <TextBlock Text="קישור לדרכון: " VerticalAlignment="Center" Margin="5,0,0,0"/>
+                    <ui:TextBox x:Name="PassportLinkBox" Width="200"/>
+                </StackPanel>
+                
+
+                <ui:Button Content="שלח נתונים"
+                           Margin="0,20,0,0"
+                           HorizontalAlignment="Stretch"
+                           Appearance="Primary"
+                           FontWeight="Bold"
+                           Click="SendFinal_Click"/>
+            </StackPanel>
+        </ui:Card>
+    </Grid>
+</Page>

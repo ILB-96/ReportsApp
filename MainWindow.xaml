@@ -86,6 +86,15 @@
                         <ui:SymbolIcon Symbol="Copy16"/>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
+                <ui:NavigationViewItem Content="נהג"
+                                       Tag="Driver"
+                                       TargetPageType="{x:Type reports:CreateDriverForm}"
+                                       NavigationCacheMode="Enabled"
+                                       FocusVisualStyle="{x:Null}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="CardUiPortraitFlip16"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>
         </ui:NavigationView>
     </Grid>

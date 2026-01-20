@@ -10,8 +10,12 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="ClosedXML" Version="0.105.0" />
       <PackageReference Include="DocX" Version="5.0.0" />
+      <PackageReference Include="EPPlus" Version="8.4.1" />
       <PackageReference Include="FreeSpire.Doc" Version="12.2.0" />
+      <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.2" />
+      <PackageReference Include="Microsoft.Office.Interop.Excel" Version="16.0.18925.20022" />
       <PackageReference Include="Microsoft.Office.Interop.Outlook" Version="15.0.4797.1004" />
       <PackageReference Include="Microsoft.Office.Interop.Word" Version="15.0.4797.1004" />
       <PackageReference Include="WPF-UI" Version="4.0.3" />
@@ -51,7 +55,7 @@
         <XamlRuntime>Wpf</XamlRuntime>
         <SubType>Designer</SubType>
       </Page>
-      <Page Update="Data.xaml">
+      <Page Update="CreateDriverForm.xaml">
         <Generator>MSBuild:Compile</Generator>
         <XamlRuntime>Wpf</XamlRuntime>
         <SubType>Designer</SubType>

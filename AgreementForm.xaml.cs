@@ -41,54 +41,20 @@ namespace Reports
             var safeName = FileNameUtils.SanitizeFileName(nameValue ?? string.Empty);
             
             var docxPath = Path.Combine(downloadsPath, $"Agreement - {safeName}.docx");
-
+            var resourceName = $"Reports.{toggle}_agreement.docx";
+            await DocxTemplateGenerator.GenerateFromEmbeddedAsync(
+                embeddedResourceName: resourceName,
+                outputPath: docxPath,
+                tokens: fields);
+            DocxTemplateGenerator.OpenInShell(docxPath);
+            
             LoadingOverlay.Visibility = Visibility.Visible;
             RootForm.IsEnabled = false;
             ToggleOption.IsEnabled = false;
-
             try
             {
-                await Task.Run(() =>
-                {
-                    var assembly = Assembly.GetExecutingAssembly();
-                    var resourceName = $"Reports.{toggle}_agreement.docx";
-
-                    using Stream? stream = assembly.GetManifestResourceStream(resourceName);
-                    if (stream == null)
-                        throw new FileNotFoundException($"Template not found in resources: {resourceName}");
-
-                    var tempTemplatePath = Path.Combine(Path.GetTempPath(), "agreement_template.docx");
-                    using (var fileStream = File.Create(tempTemplatePath))
-                        stream.CopyTo(fileStream);
-
-                    using (var doc = DocX.Load(tempTemplatePath))
-                    {
-                        TokenMerge.ReplaceTokens(doc, fields);
-
-                        try
-                        {
-                            doc.SaveAs(docxPath);
-                        }
-                        catch (IOException ex)
-                        {
-                            throw new IOException("Please close the document and try again.", ex);
-                        }
-                        finally
-                        {
-                            try { File.Delete(tempTemplatePath); } catch { /* ignore */ }
-                        }
-                    }
-                });
-
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = docxPath,
-                    UseShellExecute = true
-                });
-                
                 foreach (var tb in FormFieldCollector.FindVisualChildren<TextBox>(RootForm))
                     tb.Clear();
-
             }
             catch (IOException ioEx)
             {

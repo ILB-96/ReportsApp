@@ -29,7 +29,7 @@ public partial class CreateCustomerRequest
         var startTime = StartTime.Text.Trim();
         var endTime = EndTime.Text.Trim();
         
-        string selected;
+        string? selected;
 
         if (RB_Shutuf.IsChecked == true)
             selected = "שיתוף";
