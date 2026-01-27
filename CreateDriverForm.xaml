@@ -4,9 +4,10 @@
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:Reports.Controls"
              FlowDirection="RightToLeft"
-             d:DesignHeight="400"
-             d:DesignWidth="300"
+             d:DesignHeight="900"
+             d:DesignWidth="600"
              ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
              Foreground="{DynamicResource TextFillColorPrimaryBrush}"
              mc:Ignorable="d"
@@ -47,128 +48,174 @@
 
         <!-- Card with form -->
         <ui:Card Grid.Row="1" Padding="20" Margin="0,0,0,10" Background="Transparent" x:Name="InputPanel">
-            <StackPanel Orientation="Vertical" >
+            <Grid Grid.IsSharedSizeScope="True" FlowDirection="RightToLeft">
+                <Grid.ColumnDefinitions>
+                    <!-- Pair #1 -->
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
                 
                 <!-- Regular Text Fields -->
-                <ui:TextBox x:Name="Url" 
-                            PlaceholderText="כתובת קייס"
-                         Margin="0,5"
-                         />
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="לינק קייס:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="0" Grid.Column="1" x:Name="Url" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
                 
-                <ui:TextBox x:Name="Cookies"
-                            PlaceholderText="Cookie"
-                            Margin="0,5" 
-                />
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="עוגיות:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="1" Grid.Column="1" x:Name="Cookies" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                
 
                 <!-- Submit Button -->
-                <ui:Button Content="שלח"
+                <ui:Button Content="יצא" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="1" 
                         Margin="0,20,0,0"
                         HorizontalAlignment="Stretch"
                         IsDefault="True"
                         Click="Submit_Click"
+                        MaxWidth="150"
                         Appearance="Primary"
                         FontWeight="Bold"/>
-            </StackPanel>
-        </ui:Card>
-        <ui:Card Grid.Row="1" Padding="20" Margin="0,0,0,10" Background="Transparent" x:Name="DataPanel" Visibility="Collapsed">
-            <StackPanel Orientation="Vertical" >
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="ליסינג: " VerticalAlignment="Center" Margin="5,0,0,0"/>
-                    <ui:TextBox x:Name="IsLeasing" Width="200"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="תאריך התחלה: " VerticalAlignment="Center" Margin="5,0,0,0"/>
-                    <ui:TextBox x:Name="ReportStartDateBox" Width="200"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="תאריך סיום: " VerticalAlignment="Center" Margin="5,0,0,0"/>
-                    <ui:TextBox x:Name="ReportEndDateBox" Width="200"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="לוחית רישוי: " VerticalAlignment="Center" Margin="5,0,0,0"/>
-                    <ui:TextBox x:Name="CarLicenseBox" Width="200"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="מספר הזמנה: " VerticalAlignment="Center" Margin="5,0,0,0"/>
-                    <ui:TextBox x:Name="ReservationNumberBox" Width="200"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="מספר דוח: " VerticalAlignment="Center" Margin="5,0,0,0"/>
-                    <ui:TextBox x:Name="ReportNumberBox" Width="200"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="שם מלא: " VerticalAlignment="Center" Margin="5,0,0,0"/>
-                    <ui:TextBox x:Name="AccountFullNameBox" Width="200"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="תעודת זהות: " VerticalAlignment="Center" Margin="5,0,0,0"/>
-                    <ui:TextBox x:Name="DriverIdBox" Width="200"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="רישיון נהיגה: " VerticalAlignment="Center" Margin="5,0,0,0"/>
-                    <ui:TextBox x:Name="DriverLicenseBox" Width="200"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="אימייל: " VerticalAlignment="Center" Margin="5,0,0,0"/>
-                    <ui:TextBox x:Name="EmailBox" Width="200"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="טלפון: " VerticalAlignment="Center" Margin="5,0,0,0"/>
-                    <ui:TextBox x:Name="PhoneBox" Width="200"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="כתובת: " VerticalAlignment="Center" Margin="5,0,0,0"/>
-                    <ui:TextBox x:Name="AddressBox" Width="200"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="מספר בית: " VerticalAlignment="Center" Margin="5,0,0,0"/>
-                    <ui:TextBox x:Name="HouseBox" Width="200"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="עיר: " VerticalAlignment="Center" Margin="5,0,0,0"/>
-                    <ui:TextBox x:Name="CityBox" Width="200"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="מיקוד: " VerticalAlignment="Center" Margin="5,0,0,0"/>
-                    <ui:TextBox x:Name="PostalCodeBox" Width="200"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="תאריך יצירה: " VerticalAlignment="Center" Margin="5,0,0,0"/>
-                    <ui:TextBox x:Name="CreatedOnBox" Width="200"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="קישור לרישיון: " VerticalAlignment="Center" Margin="5,0,0,0"/>
-                    <ui:TextBox x:Name="LicenseLinkBox" Width="200"/>
-                </StackPanel>
-
-                <StackPanel Orientation="Horizontal" Margin="0,5">
-                    <TextBlock Text="קישור לדרכון: " VerticalAlignment="Center" Margin="5,0,0,0"/>
-                    <ui:TextBox x:Name="PassportLinkBox" Width="200"/>
-                </StackPanel>
-                
-
-                <ui:Button Content="שלח נתונים"
+                <ui:Button x:Name="ClearExcelButton"
+                           Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="1"
+                           Content="נקה שורות מאקסל"
                            Margin="0,20,0,0"
+                           
+                           HorizontalAlignment="Stretch"
+                           Appearance="Info"
+                           MaxWidth="150"
+                           Background="#B91C1C"
+                           MouseOverBackground="#DC2626"
+                           PressedBackground="#991B1B"
+                           Click="ClearExcelMenu_Click">
+
+                    <ui:Button.ContextMenu>
+                        <ContextMenu FlowDirection="RightToLeft">
+                            <MenuItem Header="נקה קובץ גוטו" Tag="goto" Click="ClearExcel_Click"/>
+                            <MenuItem Header="נקה קובץ אוטותל" Tag="autotel" Click="ClearExcel_Click"/>
+                            <MenuItem Header="נקה קובץ ליסינג" Tag="leasing" Click="ClearExcel_Click"/>
+                        </ContextMenu>
+                    </ui:Button.ContextMenu>
+                </ui:Button>
+            </Grid>
+        </ui:Card>
+        <ui:Card Grid.Row="1"
+                 Padding="20"
+                 Margin="0,0,0,10"
+                 Background="Transparent"
+                 Visibility="Collapsed"
+                 FlowDirection="RightToLeft"
+                 x:Name="DataPanel">
+
+            <!-- One grid = consistent alignment for all rows -->
+            <Grid Grid.IsSharedSizeScope="True" FlowDirection="RightToLeft">
+                <Grid.ColumnDefinitions>
+                    <!-- Pair #1 -->
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                    <ColumnDefinition Width="*" />
+                    <!-- Gap -->
+                    <ColumnDefinition Width="20" />
+                    <!-- Pair #2 -->
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Row 0: Start/End date -->
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="תאריך התחלה:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="0" Grid.Column="1" x:Name="ReportStartDateBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <TextBlock Grid.Row="0" Grid.Column="3" Text="תאריך סיום:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="0" Grid.Column="4" x:Name="ReportEndDateBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <!-- Row 1: License/Reservation -->
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="לוחית רישוי:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="1" Grid.Column="1" x:Name="CarLicenseBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="3" Text="מספר הזמנה:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="1" Grid.Column="4" x:Name="ReservationNumberBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <!-- Row 2: Report number / Full name -->
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="מספר דוח:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="2" Grid.Column="1" x:Name="ReportNumberBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="3" Text="שם מלא:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="2" Grid.Column="4" x:Name="AccountFullNameBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <!-- Row 3: ID / Driver license -->
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="תעודת זהות:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="3" Grid.Column="1" x:Name="DriverIdBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <TextBlock Grid.Row="3" Grid.Column="3" Text="רישיון נהיגה:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="3" Grid.Column="4" x:Name="DriverLicenseBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <!-- Row 4: Email / Phone -->
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="אימייל:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="4" Grid.Column="1" x:Name="EmailBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <TextBlock Grid.Row="4" Grid.Column="3" Text="טלפון:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="4" Grid.Column="4" x:Name="PhoneBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <!-- Row 5: Address / House -->
+                <TextBlock Grid.Row="5" Grid.Column="0" Text="כתובת:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="5" Grid.Column="1" x:Name="AddressBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <TextBlock Grid.Row="5" Grid.Column="3" Text="מספר בית:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="5" Grid.Column="4" x:Name="HouseBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <!-- Row 6: City / Postal -->
+                <TextBlock Grid.Row="6" Grid.Column="0" Text="עיר:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="6" Grid.Column="1" x:Name="CityBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <TextBlock Grid.Row="6" Grid.Column="3" Text="מיקוד:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="6" Grid.Column="4" x:Name="PostalCodeBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                
+                <TextBlock Grid.Row="7" Grid.Column="3" Text="קישור לדרכון:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="7" Grid.Column="4" x:Name="PassportLinkBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <TextBlock Grid.Row="7" Grid.Column="0" Text="קישור לרישיון:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="7" Grid.Column="1" x:Name="LicenseLinkBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+
+                <TextBlock Grid.Row="8" Grid.Column="0" Text="תאריך יצירה:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="8" Grid.Column="1" x:Name="CreatedOnBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                
+                <TextBlock Grid.Row="8" Grid.Column="3" Text="ליסינג:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="8" Grid.Column="4" x:Name="IsLeasing" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                <!-- Row 9: Button -->
+                
+                <ui:Button Grid.Row="9" Grid.Column="2" Grid.ColumnSpan="3"
+                           Content="שלח נתונים"
+                           Margin="4,20,0,0"
                            HorizontalAlignment="Stretch"
                            Appearance="Primary"
                            FontWeight="Bold"
+                           MaxWidth="250"
                            Click="SendFinal_Click"/>
-            </StackPanel>
+                <ui:Button Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"
+                           Content="חזור"
+                           Margin="4,20,0,0"
+                           HorizontalAlignment="Stretch"
+                           Appearance="Secondary"
+                           
+                           Click="PreviousPage_Click"/>
+            </Grid>
         </ui:Card>
+        <controls:OverlayBanner x:Name="Overlay"
+                                Grid.Row="0"/>
+
     </Grid>
 </Page>

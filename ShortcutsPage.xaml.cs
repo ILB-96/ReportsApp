@@ -27,46 +27,53 @@ namespace Reports
             Clipboard.SetDataObject(data, true);
 
             // 6) Success overlay
-            await ShowOverlayAsync(true, $"תבנית תחבצ הועתקה ללוח. אפשר להדביק.");
+            await Overlay.ShowAsync(true, $"תבנית תחבצ הועתקה ללוח. אפשר להדביק.");
         }
 
         private async void Paid_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var brand = (sender as FrameworkElement)?.Tag?.ToString()?.Trim().ToLowerInvariant();
+                if (string.IsNullOrWhiteSpace(brand))
                 {
-                    var brand = (sender as FrameworkElement)?.Tag?.ToString()?.Trim().ToLowerInvariant();
-                    if (string.IsNullOrWhiteSpace(brand))
-                    {
-                        await ShowOverlayAsync(false, "שגיאה: לא זוהה מותג הכפתור (Tag).");
-                        return;
-                    }
-
-                    try
-                    {
-                        // 1) Resolve template and images by brand
-                        string htmlPath   = $"Assets/{brand}_paid_fine.html";
-                        string headerPath = $"Assets/{brand}_header.png";
-
-                        // 2) Load HTML from Resource
-                        string html = LoadTextResource(htmlPath);
-
-                        // 3) Optional token replacement
-                        // html = html.Replace("{CustomerName}", "צורית שמן");
-
-                        // 4) Replace img src for header/footer with Base64 data URIs from Resources
-                        html = ReplaceImgSrcWithDataUri(html, $"{brand}_header.png", "image/png", headerPath);
-                        // 5) Put on clipboard (HTML + plain-text fallback)
-                        var data = new DataObject();
-                        data.SetData(DataFormats.Html, BuildClipboardHtml(html));
-                        data.SetData(DataFormats.UnicodeText, HtmlToPlainText(html));
-                        Clipboard.SetDataObject(data, true);
-
-                        // 6) Success overlay
-                        await ShowOverlayAsync(true, $"תבנית {brand} הועתקה ללוח. אפשר להדביק.");
-                    }
-                    catch (Exception ex)
-                    {
-                        await ShowOverlayAsync(false, $"העתקה ללוח נכשלה ({brand}): {ex.Message}");
-                    }
+                    await Overlay.ShowAsync(false, "שגיאה: לא זוהה מותג הכפתור (Tag).");
+                    return;
                 }
+
+                try
+                {
+                    // 1) Resolve template and images by brand
+                    string htmlPath   = $"Assets/{brand}_paid_fine.html";
+                    string headerPath = $"Assets/{brand}_header.png";
+
+                    // 2) Load HTML from Resource
+                    string html = LoadTextResource(htmlPath);
+
+                    // 3) Optional token replacement
+                    // html = html.Replace("{CustomerName}", "צורית שמן");
+
+                    // 4) Replace img src for header/footer with Base64 data URIs from Resources
+                    html = ReplaceImgSrcWithDataUri(html, $"{brand}_header.png", "image/png", headerPath);
+                    // 5) Put on clipboard (HTML + plain-text fallback)
+                    var data = new DataObject();
+                    data.SetData(DataFormats.Html, BuildClipboardHtml(html));
+                    data.SetData(DataFormats.UnicodeText, HtmlToPlainText(html));
+                    Clipboard.SetDataObject(data, true);
+
+                    // 6) Success overlay
+                    await Overlay.ShowAsync(true, $"תבנית {brand} הועתקה ללוח. אפשר להדביק.");
+                }
+                catch (Exception ex)
+                {
+                    await Overlay.ShowAsync(false, $"העתקה ללוח נכשלה ({brand}): {ex.Message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                await Overlay.ShowAsync(false, ex.Message);
+            }
+        }
 
                 // ----- Resource helpers -----
                 private static string LoadTextResource(string relativePath)
@@ -145,33 +152,7 @@ namespace Reports
                     return s.Trim();
                 }
 
-                private async Task ShowOverlayAsync(bool success, string message, int milliseconds = 2500)
-                {
-                    var successBrush = TryFindResource("SystemFillColorSuccessBrush") as Brush
-                                       ?? new SolidColorBrush(Color.FromRgb(0x2E, 0x7D, 0x32)); // green
-                    var dangerBrush  = TryFindResource("SystemFillColorCriticalBrush") as Brush
-                                       ?? new SolidColorBrush(Color.FromRgb(0xC6, 0x28, 0x28)); // red
-                    var textBrush    = TryFindResource("TextOnAccentFillColorPrimaryBrush") as Brush
-                                       ?? Brushes.White;
-
-                    OverlayBanner.Background = success ? successBrush : dangerBrush;
-                    OverlayText.Foreground   = textBrush;
-                    OverlayIcon.Foreground   = textBrush;
-                    OverlayIcon.Text         = success ? "✔" : "✖";
-                    OverlayText.Text         = message;
-
-                    var show = TryFindResource("ShowOverlayStoryboard") as Storyboard;
-                    var hide = TryFindResource("HideOverlayStoryboard") as Storyboard;
-
-                    OverlayBanner.Visibility = Visibility.Visible;
-
-                    if (show != null) show.Begin(); else OverlayBanner.Opacity = 1;
-                    await Task.Delay(milliseconds);
-                    if (hide != null) hide.Begin(); else OverlayBanner.Opacity = 0;
-
-                    await Task.Delay(220);
-                    OverlayBanner.Visibility = Visibility.Collapsed;
-                }
+              
 
     }
 }

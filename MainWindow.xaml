@@ -7,11 +7,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         FlowDirection="RightToLeft"
         Title="FinesDesk"
-        Width="300"
+        MinWidth="300"
         MinHeight="450"
         SizeToContent="Height"
         d:DesignHeight="450"
-        d:DesignWidth="350"
+        d:DesignWidth="300"
         ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
         ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
         ExtendsContentIntoTitleBar="True"
@@ -92,7 +92,7 @@
                                        NavigationCacheMode="Enabled"
                                        FocusVisualStyle="{x:Null}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="CardUiPortraitFlip16"/>
+                        <ui:SymbolIcon Symbol="ContactCard16"/>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>

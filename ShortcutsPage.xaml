@@ -5,34 +5,12 @@
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:controls="clr-namespace:Reports.Controls"
       mc:Ignorable="d"
       FlowDirection="RightToLeft"
       Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
-
-    <!-- Animations for overlay banner -->
-    <Page.Resources>
-        <Storyboard x:Key="ShowOverlayStoryboard">
-            <DoubleAnimation Storyboard.TargetName="OverlayBanner"
-                             Storyboard.TargetProperty="Opacity"
-                             From="0" To="0.80" Duration="0:0:0.15"/>
-            <DoubleAnimation Storyboard.TargetName="OverlayBanner"
-                             Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
-                             From="-24" To="0" Duration="0:0:0.18"/>
-        </Storyboard>
-
-        <Storyboard x:Key="HideOverlayStoryboard">
-            <DoubleAnimation Storyboard.TargetName="OverlayBanner"
-                             Storyboard.TargetProperty="Opacity"
-                             From="0.80" To="0" Duration="0:0:0.20"/>
-            <DoubleAnimation Storyboard.TargetName="OverlayBanner"
-                             Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
-                             From="0" To="-24" Duration="0:0:0.20"/>
-        </Storyboard>
-        
-        </Page.Resources>
-        
-
+    
     <!-- Outer padding via Border -->
     <Border Padding="16">
         <Grid x:Name="RootGrid">
@@ -107,30 +85,8 @@
                     </UniformGrid>
                 </Grid>
             </ui:Card>
-
-            <!-- Overlay banner (success/error) -->
-            <Grid Grid.Row="0" x:Name="OverlayHost" IsHitTestVisible="False">
-                <Border x:Name="OverlayBanner"
-                        Visibility="Collapsed"
-                        CornerRadius="8"
-                        Padding="10"
-                        Margin="0,8,0,0"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Top"
-                        Opacity="0"
-                        RenderTransformOrigin="0.5,0">
-                    <Border.RenderTransform>
-                        <TranslateTransform Y="-24"/>
-                    </Border.RenderTransform>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="6,0">
-                        <TextBlock x:Name="OverlayIcon"
-                                   Text="✔"
-                                   FontSize="14"
-                                   Margin="0,0,6,0"/>
-                        <TextBlock x:Name="OverlayText" FontSize="14"/>
-                    </StackPanel>
-                </Border>
-            </Grid>
+            <controls:OverlayBanner x:Name="Overlay"
+                                    Grid.Row="0"/>
         </Grid>
     </Border>
 </Page>

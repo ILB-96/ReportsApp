@@ -4,9 +4,14 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Controls;
 using Reports.Utilities;
 using ClosedXML.Excel;
 using Reports.Data;
+
+using MessageBox = System.Windows.MessageBox;
+using MessageBoxButton = System.Windows.MessageBoxButton;
+using MessageBoxResult = System.Windows.MessageBoxResult;
 
 
 namespace Reports
@@ -32,54 +37,120 @@ namespace Reports
 
             _ = _phones.EnsureCreatedAsync();
         }
+        private void ClearExcelMenu_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement { ContextMenu: not null } fe)
+            {
+                fe.ContextMenu.PlacementTarget = fe;
+                fe.ContextMenu.IsOpen = true;
+            }
+        }
+        private async void ClearExcel_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not MenuItem mi) return;
+
+
+            var serviceType = mi.Tag?.ToString();
+            if (string.IsNullOrWhiteSpace(serviceType)) return;
+            var confirm = MessageBox.Show(
+                $"זה ימחק את כל השורות בקובץ {serviceType}_drivers_export.xlsx.\nלהמשיך?",
+                "אישור מחיקה",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                await Task.Run(() => ClearDriversExportFile(serviceType));
+                await Overlay.ShowAsync(true, "נמחק בהצלחה.");
+            }
+            catch (Exception ex)
+            {
+                await Overlay.ShowAsync(false, ex.Message);
+            }
+        }
+
+        private async void ClearDriversExportFile(string serviceType)
+        {
+            try
+            {
+                var driversFolder = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                    "Docs", "Drivers");
+
+                var excelPath = Path.Combine(driversFolder, $"{serviceType}_drivers_export.xlsx");
+
+                if (!File.Exists(excelPath))
+                    await Overlay.ShowAsync(false,$"הקובץ לא נמצא:{excelPath}");
+
+                using var workbook = new XLWorkbook(excelPath);
+                var ws = workbook.Worksheet(1);
+
+                var lastRowUsed = ws.LastRowUsed();
+                if (lastRowUsed == null)
+                {
+                    workbook.Save();
+                    return;
+                }
+
+                var lastRow = lastRowUsed.RowNumber();
+                if (lastRow <= 1) // only header row
+                {
+                    workbook.Save();
+                    return;
+                }
+
+                // Clear contents from row 2 down, keep header row + formatting
+                const int lastCol = 12; // you write up to column 12
+                ws.Range(2, 1, lastRow, lastCol).Clear(XLClearOptions.Contents);
+
+                workbook.Save();
+            }
+            catch (Exception ex)
+            {
+                await Overlay.ShowAsync(false, ex.Message);
+            }
+        }
 
         private async void Submit_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                var baseUri = new Uri("https://goto.crm4.dynamics.com");
+                var toggle = ToggleOption.IsChecked == true ? "goto" : "autotel";
+                var baseUri = new Uri($"https://{toggle}.crm4.dynamics.com");
                 var url = Url.Text.Trim();
                 var cookie = Cookies.Text.Trim();
-                var toggle = ToggleOption.IsChecked == true ? "goto" : "leasing";
                 var cookies = CookieExtractor.ExtractCrmOwinCookies(cookie);
-               
                 var incidentHttp = CreateCrmClient(baseUri, cookies);
-                
-                var incidentPath = $"/api/data/v9.0/incidents({url})";
+                var incidentId = url.Contains("&id=") ? url.Split("&id=")[1] : url;
+                var incidentPath = $"/api/data/v9.0/incidents({incidentId})";
                 var incident = await GetEntityAsync(incidentHttp, incidentPath, "incident.json");
-                
                 var accountLink = incident?["_customerid_value"].ToString();
-                if (string.IsNullOrWhiteSpace(accountLink))
-                    throw new InvalidOperationException("Account Link is missing.");
-                
                 var accountFullName = incident?["_customerid_value@OData.Community.Display.V1.FormattedValue"];
-                
                 var reservationNumber = incident?["c2g_responsibledriverreservationid"];
                 var reportTime = incident?["c2g_executiondate@OData.Community.Display.V1.FormattedValue"];
                 var isLeasing = incident?["gtg_leasingreport"];
                 var reportNumber = incident?["c2g_reportnumber"];
                 var carLicense = incident?["_new_vehicle_value@OData.Community.Display.V1.FormattedValue"];
-                Console.WriteLine(accountLink?.GetType().FullName);
-                Console.WriteLine(accountLink);
+
+                if (string.IsNullOrWhiteSpace(accountLink))
+                    throw new InvalidOperationException("Account Link is missing.");
                 
                 var accountHttp = CreateCrmClient(baseUri, cookies);
                 var accountPath = $"/api/data/v9.0/accounts({accountLink})";
                 var account = await GetEntityAsync(accountHttp, accountPath, "account.json");
-                Console.WriteLine("--MID");
+
                 var driverId = new string(
-                    (account?["c2g_idno"]?.ToString() ?? string.Empty)
+                    (TryGetValue(account, ["c2g_idno", "c2g_privatecompanyno"]))
                     .Where(char.IsDigit)
                     .ToArray());
-                Console.WriteLine("---MID");
-                var licenseRaw = GetString(account, "c2g_licenseno") ?? string.Empty;
-                var driverLicense = new string(
-                    licenseRaw.Where(char.IsDigit).ToArray()
-                );
+                var licenseRaw = TryGetValue(account, ["c2g_licenseno"]);
+                var driverLicense = new string(licenseRaw.Where(char.IsDigit).ToArray());
                 var email = account?["emailaddress1"];
-                Console.WriteLine("----MID");
-                var phoneNumberRaw = GetString(account, "address2_telephone1") ?? string.Empty;
+                var phoneNumberRaw = TryGetValue(account, ["address2_telephone1", "c2g_pointofcontacttelephone"]);
                 var phoneNumber = phoneNumberRaw.Replace("+", "").Trim() ?? string.Empty;
-                Console.WriteLine("--MID");
                 var address = account?["address1_line1"];
                 var addressHouse2 = account?["address2_line1"];
                 var addressCity = account?["address1_city"];
@@ -88,13 +159,12 @@ namespace Reports
                 var licenseFrontLink =  account?["c2g_driverlicensefront"];
                 var passportLink = account?["gtg_passportlink"];
                 
-                if (phoneNumber == null || (await _phones.ExistsAsync(phoneNumber)))
+                if (await _phones.ExistsAsync(phoneNumber))
                 {
-                    MessageBox.Show("This phone already exists locally (SQLite). Not inserting again.",
-                        "Duplicate phone", MessageBoxButton.OK, MessageBoxImage.Information);
+                    await Overlay.ShowAsync(false, "This phone already exists locally (SQLite).");
                     return;
                 }
-                Console.WriteLine("MID");
+                
                 IsLeasing.Text              = isLeasing?.ToString() ?? string.Empty;
                 ReportStartDateBox.Text        = reportTime?.ToString() ?? string.Empty;
                 ReportEndDateBox.Text        = reportTime?.ToString() ?? string.Empty;
@@ -118,15 +188,11 @@ namespace Reports
                 PassportLinkBox.Text     = passportLink?.ToString() ?? string.Empty;
 
                 // Switch UI state
-                InputPanel.Visibility = Visibility.Collapsed;
-                TogglePanel.Visibility = Visibility.Collapsed;
-                DataPanel.Visibility  = Visibility.Visible;
-                Console.WriteLine("END");
+                ShowSecondPage();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                await Overlay.ShowAsync(false, ex.Message);
             }
         }
         private static string? GetString(Dictionary<string, object>? dict, string key)
@@ -145,6 +211,18 @@ namespace Reports
             }
 
             return value.ToString();
+        }
+
+        private static string TryGetValue(Dictionary<string, object>? dict, IEnumerable<string> keys)
+        {
+            foreach (var key in keys)
+            {
+                var val = GetString(dict, key) ??  string.Empty;
+                if (!string.IsNullOrWhiteSpace(val))
+                    return val;
+            }
+
+            return string.Empty;
         }
         private HttpClient CreateCrmClient(Uri baseUri, IDictionary<string, string> cookies)
         {
@@ -215,99 +293,114 @@ namespace Reports
         
         private async void SendFinal_Click(object sender, RoutedEventArgs e)
         {
-            var isLeasing = bool.TryParse(IsLeasing.Text?.Trim(), out var b) && b;
-            var serviceType = isLeasing ? "leasing" : "goto";
-            Console.WriteLine(IsLeasing);
-            Console.WriteLine(serviceType);
-            var startDate = ReportStartDateBox.Text.Trim();
-            var endDate = ReportEndDateBox.Text.Trim();
-            var carLicense = CarLicenseBox.Text.Trim().Replace("-", "");
-            var fullName = AccountFullNameBox.Text.Trim();
-            var driverId = DriverIdBox.Text.Trim();
-            var driverLicense = DriverLicenseBox.Text.Trim();
-            var email = EmailBox.Text.Trim();
-            var phone = PhoneBox.Text.Trim();
-            var address = AddressBox.Text.Trim();
-            var house = HouseBox.Text.Trim();
-            var city = CityBox.Text.Trim();
-            var postalCode = PostalCodeBox.Text.Trim();
-            var createdOn = CreatedOnBox.Text.Trim();
-            var licenseLink = LicenseLinkBox.Text.Trim();
-            var passportLink = PassportLinkBox.Text.Trim();
-            var reservationNumber = ReservationNumberBox.Text.Trim();
-            
-
             try
             {
-                var driversFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Docs");
-                Directory.CreateDirectory(driversFolder);
-                driversFolder = Path.Combine(driversFolder, "Drivers");
-                Directory.CreateDirectory(driversFolder);
-                Console.WriteLine(driversFolder);
-
-                var accountFolderName = $"{fullName} - {carLicense}";
-                var accountFolder = Path.Combine(driversFolder, accountFolderName);
+                var toggle = ToggleOption.IsChecked == true ? "goto" : "autotel";
+                var isLeasing = bool.TryParse(IsLeasing.Text?.Trim(), out var b) && b;
+                var serviceType = isLeasing ? "leasing" : toggle;
+                var startDate = ReportStartDateBox.Text.Trim();
+                var endDate = ReportEndDateBox.Text.Trim();
+                var carLicense = CarLicenseBox.Text.Trim().Replace("-", "");
+                var fullName = AccountFullNameBox.Text.Trim();
+                var driverId = DriverIdBox.Text.Trim();
+                var driverLicense = DriverLicenseBox.Text.Trim();
+                var email = EmailBox.Text.Trim();
+                var phone = PhoneBox.Text.Trim();
+                var address = AddressBox.Text.Trim();
+                var house = HouseBox.Text.Trim();
+                var city = CityBox.Text.Trim();
+                var postalCode = PostalCodeBox.Text.Trim();
+                var createdOn = CreatedOnBox.Text.Trim();
+                var licenseLink = LicenseLinkBox.Text.Trim();
+                var passportLink = PassportLinkBox.Text.Trim();
+                var reservationNumber = ReservationNumberBox.Text.Trim();
                 
-                Directory.CreateDirectory(accountFolder);
-                await DownloadIfExistsAsync(licenseLink, accountFolder, "license");
-                await DownloadIfExistsAsync(passportLink, accountFolder, "passport");
+                var driversFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Docs", "Drivers");
+                var accountFolder = Path.Combine(driversFolder, $"{fullName} - {carLicense}");
                 var excelPath = Path.Combine(driversFolder, $"{serviceType}_drivers_export.xlsx");
-                Console.WriteLine(excelPath);
-            
-                using var workbook = new XLWorkbook(excelPath);
-                var worksheet = workbook.Worksheet(1);
-
-
-                var lastRow = worksheet.LastRowUsed();
-                var newRow = (lastRow != null) ? lastRow.RowNumber() + 1 : 1;
-
-                worksheet.Cell(newRow, 5).Value = startDate;
-                worksheet.Cell(newRow, 6).Value = endDate;
-                worksheet.Cell(newRow, 1).Value = carLicense;
-                worksheet.Cell(newRow, 2).Value = fullName;
-                worksheet.Cell(newRow, 3).Value = driverId;
-                worksheet.Cell(newRow, 7).Value= driverLicense;
-                worksheet.Cell(newRow, 11).Value = email;
-                worksheet.Cell(newRow, 4).Value = phone;
-                worksheet.Cell(newRow, 8).Value= address;
-                worksheet.Cell(newRow, 9).Value = house;
-                worksheet.Cell(newRow, 10).Value = city;
-                worksheet.Cell(newRow, 12).Value = postalCode;
-                
-                workbook.Save();
-                
-                if (!string.IsNullOrEmpty(reservationNumber))
+                try
                 {
-                    var fields = new Dictionary<string, string>
-                    {
-                        ["Name"] = fullName,
-                        ["Date"] = createdOn
-                    };
-                    var safeName = FileNameUtils.SanitizeFileName(fullName);
+                    Directory.CreateDirectory(driversFolder);
+                    Directory.CreateDirectory(driversFolder);
+                    Directory.CreateDirectory(accountFolder);
+                    
+                    await DownloadIfExistsAsync(licenseLink, accountFolder, "license");
+                    await DownloadIfExistsAsync(passportLink, accountFolder, "passport");
+                    
+            
+                    using var workbook = new XLWorkbook(excelPath);
+                    var worksheet = workbook.Worksheet(1);
 
-                    var docxPath = Path.Combine(accountFolder, $"Agreement - {safeName}.docx");
-                    const string resourceName = $"Reports.goto_agreement.docx";
-                    await DocxTemplateGenerator.GenerateFromEmbeddedAsync(
-                        embeddedResourceName: resourceName,
-                        outputPath: docxPath,
-                        tokens: fields);
-                    DocxTemplateGenerator.OpenInShell(docxPath);
-                }
 
-                await _phones.InsertAsync(phone);
+                    var lastRow = worksheet.LastRowUsed();
+                    var newRow = (lastRow != null) ? lastRow.RowNumber() + 1 : 1;
+
+                    worksheet.Cell(newRow, 5).Value = startDate;
+                    worksheet.Cell(newRow, 6).Value = endDate;
+                    worksheet.Cell(newRow, 1).Value = carLicense;
+                    worksheet.Cell(newRow, 2).Value = fullName;
+                    worksheet.Cell(newRow, 3).Value = driverId;
+                    worksheet.Cell(newRow, 7).Value= driverLicense;
+                    worksheet.Cell(newRow, 11).Value = email;
+                    worksheet.Cell(newRow, 4).Value = phone;
+                    worksheet.Cell(newRow, 8).Value= address;
+                    worksheet.Cell(newRow, 9).Value = house;
+                    worksheet.Cell(newRow, 10).Value = city;
+                    worksheet.Cell(newRow, 12).Value = postalCode;
                 
-                InputPanel.Visibility = Visibility.Visible;
-                TogglePanel.Visibility = Visibility.Visible;
-                DataPanel.Visibility  = Visibility.Collapsed;
+                    workbook.Save();
+                
+                    if (!string.IsNullOrEmpty(reservationNumber))
+                    {
+                        var fields = new Dictionary<string, string>
+                        {
+                            ["Name"] = fullName,
+                            ["Date"] = createdOn
+                        };
+                        var safeName = FileNameUtils.SanitizeFileName(fullName);
+
+                        var docxPath = Path.Combine(accountFolder, $"Agreement - {safeName}.docx");
+                        var resourceName = $"Reports.{toggle}_agreement.docx";
+                        await DocxTemplateGenerator.GenerateFromEmbeddedAsync(
+                            embeddedResourceName: resourceName,
+                            outputPath: docxPath,
+                            tokens: fields);
+                        DocxTemplateGenerator.OpenInShell(docxPath);
+                    }
+
+                    await _phones.InsertAsync(phone);
+                
+                    ShowFirstPage();
+                    await Overlay.ShowAsync(true, $"שורה נוספה לקובץ {excelPath}");
+                }
+                catch (Exception ex)
+                {
+                    await Overlay.ShowAsync(false, ex.Message);
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                await Overlay.ShowAsync(false, ex.Message);
             }
         }
-        
 
+        private void ShowFirstPage()
+        {
+            InputPanel.Visibility = Visibility.Visible;
+            TogglePanel.Visibility = Visibility.Visible;
+            DataPanel.Visibility  = Visibility.Collapsed;
+        }
+        private void ShowSecondPage()
+        {
+            InputPanel.Visibility = Visibility.Collapsed;
+            TogglePanel.Visibility = Visibility.Collapsed;
+            DataPanel.Visibility  = Visibility.Visible;
+        }
+
+        private void PreviousPage_Click(object sender, RoutedEventArgs e)
+        {
+            ShowFirstPage();
+        }
         async Task DownloadIfExistsAsync(string url, string targetFolder, string newNameWithoutExt)
         {
             var http = new HttpClient();
