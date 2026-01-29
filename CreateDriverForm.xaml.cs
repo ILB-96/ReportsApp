@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -16,7 +17,7 @@ using MessageBoxResult = System.Windows.MessageBoxResult;
 
 namespace Reports
 {
-    public partial class CreateDriverForm
+    public partial class CreateDriverForm : Page
     {
         private readonly AppDb _db;
         private readonly PhonesRepository _phones;
@@ -47,28 +48,33 @@ namespace Reports
         }
         private async void ClearExcel_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not MenuItem mi) return;
-
-
-            var serviceType = mi.Tag?.ToString();
-            if (string.IsNullOrWhiteSpace(serviceType)) return;
-            var confirm = MessageBox.Show(
-                $"זה ימחק את כל השורות בקובץ {serviceType}_drivers_export.xlsx.\nלהמשיך?",
-                "אישור מחיקה",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (confirm != MessageBoxResult.Yes)
-                return;
-
             try
             {
+                await Loading.ShowAsync("מוחק את השורות... רגע סבלנות", "זה יכול לקחת עד כמה שניות...");
+                if (sender is not MenuItem mi) return;
+
+
+                var serviceType = mi.Tag?.ToString();
+                if (string.IsNullOrWhiteSpace(serviceType)) return;
+                var confirm = MessageBox.Show(
+                    $"זה ימחק את כל השורות בקובץ {serviceType}_drivers_export.xlsx.\nלהמשיך?",
+                    "אישור מחיקה",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (confirm != MessageBoxResult.Yes)
+                    return;
+
                 await Task.Run(() => ClearDriversExportFile(serviceType));
                 await Overlay.ShowAsync(true, "נמחק בהצלחה.");
             }
             catch (Exception ex)
             {
                 await Overlay.ShowAsync(false, ex.Message);
+            }
+            finally
+            {
+                await Loading.HideAsync();
             }
         }
 
@@ -118,6 +124,7 @@ namespace Reports
         {
             try
             {
+                await Loading.ShowAsync("מיצא את פרטי הנהג... רגע סבלנות", "זה יכול לקחת עד כמה שניות...");
                 var toggle = ToggleOption.IsChecked == true ? "goto" : "autotel";
                 var baseUri = new Uri($"https://{toggle}.crm4.dynamics.com");
                 var url = Url.Text.Trim();
@@ -137,7 +144,7 @@ namespace Reports
 
                 if (string.IsNullOrWhiteSpace(accountLink))
                     throw new InvalidOperationException("Account Link is missing.");
-                
+
                 var accountHttp = CreateCrmClient(baseUri, cookies);
                 var accountPath = $"/api/data/v9.0/accounts({accountLink})";
                 var account = await GetEntityAsync(accountHttp, accountPath, "account.json");
@@ -156,36 +163,36 @@ namespace Reports
                 var addressCity = account?["address1_city"];
                 var addressPostalCode = account?["address1_postalcode"];
                 var createdOn = account?["createdon@OData.Community.Display.V1.FormattedValue"];
-                var licenseFrontLink =  account?["c2g_driverlicensefront"];
+                var licenseFrontLink = account?["c2g_driverlicensefront"];
                 var passportLink = account?["gtg_passportlink"];
-                
+
                 if (await _phones.ExistsAsync(phoneNumber))
                 {
                     await Overlay.ShowAsync(false, "This phone already exists locally (SQLite).");
                     return;
                 }
-                
-                IsLeasing.Text              = isLeasing?.ToString() ?? string.Empty;
-                ReportStartDateBox.Text        = reportTime?.ToString() ?? string.Empty;
-                ReportEndDateBox.Text        = reportTime?.ToString() ?? string.Empty;
-                CarLicenseBox.Text       = carLicense?.ToString() ?? string.Empty;
-                ReservationNumberBox.Text= reservationNumber?.ToString() ?? string.Empty;
-                ReportNumberBox.Text     = reportNumber?.ToString() ?? string.Empty;
 
-                AccountFullNameBox.Text  = accountFullName?.ToString() ?? string.Empty;
-                DriverIdBox.Text         = driverId?.ToString() ?? string.Empty;
-                DriverLicenseBox.Text   = driverLicense?.ToString() ?? string.Empty;
-                EmailBox.Text            = email?.ToString() ?? string.Empty;
-                PhoneBox.Text            = phoneNumber?.ToString() ?? string.Empty;
+                IsLeasing.Text = isLeasing?.ToString() ?? string.Empty;
+                ReportStartDateBox.Text = reportTime?.ToString() ?? string.Empty;
+                ReportEndDateBox.Text = reportTime?.ToString() ?? string.Empty;
+                CarLicenseBox.Text = carLicense?.ToString() ?? string.Empty;
+                ReservationNumberBox.Text = reservationNumber?.ToString() ?? string.Empty;
+                ReportNumberBox.Text = reportNumber?.ToString() ?? string.Empty;
 
-                AddressBox.Text          = address?.ToString() ?? string.Empty;
-                HouseBox.Text            = addressHouse2?.ToString() ?? string.Empty;
-                CityBox.Text             = addressCity?.ToString() ?? string.Empty;
-                PostalCodeBox.Text         = addressPostalCode?.ToString() ?? string.Empty;
-                CreatedOnBox.Text        = createdOn?.ToString() ?? string.Empty;
+                AccountFullNameBox.Text = accountFullName?.ToString() ?? string.Empty;
+                DriverIdBox.Text = driverId?.ToString() ?? string.Empty;
+                DriverLicenseBox.Text = driverLicense?.ToString() ?? string.Empty;
+                EmailBox.Text = email?.ToString() ?? string.Empty;
+                PhoneBox.Text = phoneNumber?.ToString() ?? string.Empty;
 
-                LicenseLinkBox.Text      = licenseFrontLink?.ToString() ?? string.Empty;
-                PassportLinkBox.Text     = passportLink?.ToString() ?? string.Empty;
+                AddressBox.Text = address?.ToString() ?? string.Empty;
+                HouseBox.Text = addressHouse2?.ToString() ?? string.Empty;
+                CityBox.Text = addressCity?.ToString() ?? string.Empty;
+                PostalCodeBox.Text = addressPostalCode?.ToString() ?? string.Empty;
+                CreatedOnBox.Text = createdOn?.ToString() ?? string.Empty;
+
+                LicenseLinkBox.Text = licenseFrontLink?.ToString() ?? string.Empty;
+                PassportLinkBox.Text = passportLink?.ToString() ?? string.Empty;
 
                 // Switch UI state
                 ShowSecondPage();
@@ -194,11 +201,15 @@ namespace Reports
             {
                 await Overlay.ShowAsync(false, ex.Message);
             }
+            finally
+            {
+                await Loading.HideAsync();
+            }
         }
         private static string? GetString(Dictionary<string, object>? dict, string key)
         {
             if (dict == null) return null;
-            if (!dict.TryGetValue(key, out var value) || value is null) return null;
+            if (!dict.TryGetValue(key, out var value)) return null;
 
             if (value is JsonElement je)
             {
@@ -279,111 +290,116 @@ namespace Reports
 
             return JsonSerializer.Deserialize<Dictionary<string, object>>(json);
         }
-        string? GetGuid(Dictionary<string, object>? dict, string key)
-        {
-            if (dict == null || !dict.TryGetValue(key, out var value))
-                return null;
-
-            return value switch
-            {
-                JsonElement je when je.ValueKind == JsonValueKind.String => je.GetString(),
-                _ => value?.ToString()
-            };
-        }
         
         private async void SendFinal_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                await Loading.ShowAsync("מייצר נהג... רגע סבלנות", "זה יכול לקחת עד כמה שניות...");
                 var toggle = ToggleOption.IsChecked == true ? "goto" : "autotel";
                 var isLeasing = bool.TryParse(IsLeasing.Text?.Trim(), out var b) && b;
                 var serviceType = isLeasing ? "leasing" : toggle;
-                var startDate = ReportStartDateBox.Text.Trim();
-                var endDate = ReportEndDateBox.Text.Trim();
-                var carLicense = CarLicenseBox.Text.Trim().Replace("-", "");
-                var fullName = AccountFullNameBox.Text.Trim();
-                var driverId = DriverIdBox.Text.Trim();
-                var driverLicense = DriverLicenseBox.Text.Trim();
-                var email = EmailBox.Text.Trim();
-                var phone = PhoneBox.Text.Trim();
-                var address = AddressBox.Text.Trim();
-                var house = HouseBox.Text.Trim();
-                var city = CityBox.Text.Trim();
-                var postalCode = PostalCodeBox.Text.Trim();
-                var createdOn = CreatedOnBox.Text.Trim();
                 var licenseLink = LicenseLinkBox.Text.Trim();
                 var passportLink = PassportLinkBox.Text.Trim();
-                var reservationNumber = ReservationNumberBox.Text.Trim();
                 
-                var driversFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Docs", "Drivers");
-                var accountFolder = Path.Combine(driversFolder, $"{fullName} - {carLicense}");
+                var excelRow = new Dictionary<int, string>
+                {
+                    [1] = CarLicenseBox.Text.Trim().Replace("-", ""),
+                    [2] = AccountFullNameBox.Text.Trim(),
+                    [3]  = DriverIdBox.Text.Trim(),
+                    [4]  = PhoneBox.Text.Trim(),
+                    [5]  = ReportStartDateBox.Text.Trim(),
+                    [6]  = ReportEndDateBox.Text.Trim(),
+                    [7]  = DriverLicenseBox.Text.Trim(),
+                    [8]  = AddressBox.Text.Trim(),
+                    [9]  = HouseBox.Text.Trim(),
+                    [10] = CityBox.Text.Trim(),
+                    [11] = EmailBox.Text.Trim(),
+                    [12] = PostalCodeBox.Text.Trim(),
+                };
+                if (excelRow[5] == excelRow[6])
+                {
+                    await Overlay.ShowAsync(false, "שנה טווח חוזה.", 4000);
+                    return;
+                }
+                foreach (var kvp in excelRow.Where(kvp => string.IsNullOrWhiteSpace(kvp.Value)))
+                {
+                    await Overlay.ShowAsync(false, $"חסרה עמודה {kvp.Key}.", 4000);
+                    return;
+                }
+                
+                var driversFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Docs",
+                    "Drivers");
+                var accountFolder = Path.Combine(driversFolder, $"{excelRow[2]} - {excelRow[1]}");
                 var excelPath = Path.Combine(driversFolder, $"{serviceType}_drivers_export.xlsx");
-                try
+  
+                Directory.CreateDirectory(driversFolder);
+                Directory.CreateDirectory(accountFolder);
+                
+                await DownloadIfExistsAsync(licenseLink, accountFolder, "license");
+                await DownloadIfExistsAsync(passportLink, accountFolder, "passport");
+
+                OpenDirectory(accountFolder);
+
+                using var workbook = new XLWorkbook(excelPath);
+                var worksheet = workbook.Worksheet(1);
+
+
+                var lastRow = worksheet.LastRowUsed();
+                var newRow = (lastRow != null) ? lastRow.RowNumber() + 1 : 1;
+
+                foreach (var kvp in excelRow)
                 {
-                    Directory.CreateDirectory(driversFolder);
-                    Directory.CreateDirectory(driversFolder);
-                    Directory.CreateDirectory(accountFolder);
-                    
-                    await DownloadIfExistsAsync(licenseLink, accountFolder, "license");
-                    await DownloadIfExistsAsync(passportLink, accountFolder, "passport");
-                    
-            
-                    using var workbook = new XLWorkbook(excelPath);
-                    var worksheet = workbook.Worksheet(1);
+                    worksheet.Cell(newRow, kvp.Key).Value = kvp.Value;
+                }
 
+                workbook.Save();
 
-                    var lastRow = worksheet.LastRowUsed();
-                    var newRow = (lastRow != null) ? lastRow.RowNumber() + 1 : 1;
-
-                    worksheet.Cell(newRow, 5).Value = startDate;
-                    worksheet.Cell(newRow, 6).Value = endDate;
-                    worksheet.Cell(newRow, 1).Value = carLicense;
-                    worksheet.Cell(newRow, 2).Value = fullName;
-                    worksheet.Cell(newRow, 3).Value = driverId;
-                    worksheet.Cell(newRow, 7).Value= driverLicense;
-                    worksheet.Cell(newRow, 11).Value = email;
-                    worksheet.Cell(newRow, 4).Value = phone;
-                    worksheet.Cell(newRow, 8).Value= address;
-                    worksheet.Cell(newRow, 9).Value = house;
-                    worksheet.Cell(newRow, 10).Value = city;
-                    worksheet.Cell(newRow, 12).Value = postalCode;
-                
-                    workbook.Save();
-                
-                    if (!string.IsNullOrEmpty(reservationNumber))
+                if (!string.IsNullOrWhiteSpace(ReservationNumberBox.Text))
+                {
+                    var fields = new Dictionary<string, string>
                     {
-                        var fields = new Dictionary<string, string>
-                        {
-                            ["Name"] = fullName,
-                            ["Date"] = createdOn
-                        };
-                        var safeName = FileNameUtils.SanitizeFileName(fullName);
+                        ["Name"] = excelRow[2],
+                        ["Date"] = CreatedOnBox.Text.Trim()
+                    };
+                    var safeName = FileNameUtils.SanitizeFileName(excelRow[2]);
 
-                        var docxPath = Path.Combine(accountFolder, $"Agreement - {safeName}.docx");
-                        var resourceName = $"Reports.{toggle}_agreement.docx";
-                        await DocxTemplateGenerator.GenerateFromEmbeddedAsync(
-                            embeddedResourceName: resourceName,
-                            outputPath: docxPath,
-                            tokens: fields);
-                        DocxTemplateGenerator.OpenInShell(docxPath);
-                    }
+                    var docxPath = Path.Combine(accountFolder, $"Agreement - {safeName}.docx");
+                    var resourceName = $"Reports.{toggle}_agreement.docx";
+                    await DocxTemplateGenerator.GenerateFromEmbeddedAsync(
+                        embeddedResourceName: resourceName,
+                        outputPath: docxPath,
+                        tokens: fields);
+                    DocxTemplateGenerator.OpenInShell(docxPath);
+                }
 
-                    await _phones.InsertAsync(phone);
-                
-                    ShowFirstPage();
-                    await Overlay.ShowAsync(true, $"שורה נוספה לקובץ {excelPath}");
-                }
-                catch (Exception ex)
-                {
-                    await Overlay.ShowAsync(false, ex.Message);
-                }
+                await _phones.InsertAsync(excelRow[4]);
+
+                ShowFirstPage();
+                await Overlay.ShowAsync(true, $"שורה נוספה לקובץ {excelPath}", 4000);
             }
             catch (Exception ex)
             {
                 await Overlay.ShowAsync(false, ex.Message);
             }
+            finally
+            {
+                await Loading.HideAsync();
+            }
         }
+        static void OpenDirectory(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return;
 
+            Directory.CreateDirectory(path); // ensures it exists
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = path,          // folder path
+                UseShellExecute = true    // required to open folder via shell
+            });
+        }
         private void ShowFirstPage()
         {
             InputPanel.Visibility = Visibility.Visible;

@@ -3,12 +3,11 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
+
 
 namespace Reports
 {
-    public partial class ShortcutsPage : Page
+    public partial class ShortcutsPage
     {
         public ShortcutsPage()
         {
@@ -18,16 +17,24 @@ namespace Reports
 
         private async void Transport_Click(object sender, RoutedEventArgs e)
         {
-            string htmlPath   = $"Assets/transport_fine.html";
-            string html = LoadTextResource(htmlPath);
+            try
+            {
+                string htmlPath   = $"Assets/transport_fine.html";
+                string html = LoadTextResource(htmlPath);
             
-            var data = new DataObject();
-            data.SetData(DataFormats.Html, BuildClipboardHtml(html));
-            data.SetData(DataFormats.UnicodeText, HtmlToPlainText(html));
-            Clipboard.SetDataObject(data, true);
+                var data = new DataObject();
+                data.SetData(DataFormats.Html, BuildClipboardHtml(html));
+                data.SetData(DataFormats.UnicodeText, HtmlToPlainText(html));
+                Clipboard.SetDataObject(data, true);
 
-            // 6) Success overlay
-            await Overlay.ShowAsync(true, $"תבנית תחבצ הועתקה ללוח. אפשר להדביק.");
+                // 6) Success overlay
+                await Overlay.ShowAsync(true, $"תבנית תחבצ הועתקה ללוח. אפשר להדביק.");
+            }
+            catch (Exception ex)
+            {
+                await Overlay.ShowAsync(false, ex.Message);
+                throw;
+            }
         }
 
         private async void Paid_Click(object sender, RoutedEventArgs e)
@@ -44,11 +51,11 @@ namespace Reports
                 try
                 {
                     // 1) Resolve template and images by brand
-                    string htmlPath   = $"Assets/{brand}_paid_fine.html";
-                    string headerPath = $"Assets/{brand}_header.png";
+                    var htmlPath   = $"Assets/{brand}_paid_fine.html";
+                    var headerPath = $"Assets/{brand}_header.png";
 
                     // 2) Load HTML from Resource
-                    string html = LoadTextResource(htmlPath);
+                    var html = LoadTextResource(htmlPath);
 
                     // 3) Optional token replacement
                     // html = html.Replace("{CustomerName}", "צורית שמן");

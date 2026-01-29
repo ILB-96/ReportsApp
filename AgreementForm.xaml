@@ -4,6 +4,7 @@
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:Reports.Controls"
              FlowDirection="RightToLeft"
              d:DesignHeight="400"
              d:DesignWidth="300"
@@ -74,27 +75,10 @@
                            FontWeight="Bold"/>
             </StackPanel>
         </ui:Card>
-
-        
-        <Grid x:Name="LoadingOverlay"
-              Grid.Row="0" Grid.RowSpan="2"
-              Visibility="Collapsed"
-              Background="#80000000"
-              IsHitTestVisible="True">
-            <Border CornerRadius="10"
-                    Padding="20"
-                    Background="{DynamicResource ControlFillColorDefaultBrush}"
-                    Opacity="0.97"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <ui:ProgressRing Width="40" Height="40" IsIndeterminate="True" Margin="0,0,0,12"/>
-                    <ui:TextBlock Text="יוצר את ההסכם... רגע סבלנות"
-                                  HorizontalAlignment="Center"
-                                  FontSize="14"
-                                  TextAlignment="Center"/>
-                </StackPanel>
-            </Border>
-        </Grid>
+        <controls:LoadingOverlay x:Name="Loading"
+                                 Grid.Row="0"
+                                 Grid.RowSpan="2"
+                                 IsCancelable="False"
+                                 MinimumShowTimeMilliseconds="250"/>
     </Grid>
 </Page>

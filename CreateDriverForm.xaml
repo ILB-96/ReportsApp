@@ -135,7 +135,7 @@
                 </Grid.RowDefinitions>
 
                 <!-- Row 0: Start/End date -->
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="תאריך התחלה:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="תאריך התחלה:" VerticalAlignment="Center" Margin="0,5,8,0" />
                 <ui:TextBox Grid.Row="0" Grid.Column="1" x:Name="ReportStartDateBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
 
                 <TextBlock Grid.Row="0" Grid.Column="3" Text="תאריך סיום:" VerticalAlignment="Center" Margin="0,5,8,0"/>
@@ -214,8 +214,13 @@
                            Click="PreviousPage_Click"/>
             </Grid>
         </ui:Card>
-        <controls:OverlayBanner x:Name="Overlay"
-                                Grid.Row="0"/>
+        <controls:LoadingOverlay x:Name="Loading"
+                                 Grid.Row="0"
+                                 Grid.RowSpan="2"
+                                 IsCancelable="False"
+                                 MinimumShowTimeMilliseconds="250"/>
+        <controls:OverlayBanner x:Name="Overlay" Grid.Row="0"
+                                />
 
     </Grid>
 </Page>
