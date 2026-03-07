@@ -81,5 +81,15 @@ namespace Reports.Utilities
                 UseShellExecute = true
             });
         }
+
+        public static async Task SaveToPdf(string path)
+        {
+            IWordPdfExporter exporter = new WordPdfExporter();
+
+            string pdfPath = await exporter.ExportAsync(
+                docxPath: path,
+                pdfPath: path.Replace(".docx", ".pdf")
+            );
+        }
     }
 }

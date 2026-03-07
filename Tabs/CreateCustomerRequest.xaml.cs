@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Input;
 
-namespace Reports;
+namespace Reports.Tabs;
 
 public partial class CreateCustomerRequest
 {

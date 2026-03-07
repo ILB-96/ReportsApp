@@ -110,7 +110,7 @@ namespace Reports.Controls
             DependencyProperty.Register(nameof(Detail), typeof(string), typeof(LoadingOverlay),
                 new PropertyMetadata(string.Empty, OnDetailChanged));
 
-        public string Detail
+        public string? Detail
         {
             get => (string)GetValue(DetailProperty);
             set => SetValue(DetailProperty, value);

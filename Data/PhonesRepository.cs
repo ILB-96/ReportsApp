@@ -33,8 +33,10 @@ namespace Reports.Data
             await using var conn = await _db.OpenConnectionAsync(ct);
             await _db.ExecuteAsync(conn, """
                                          CREATE TABLE IF NOT EXISTS Phones (
-                                             Phone TEXT NOT NULL PRIMARY KEY,
-                                             CreatedUtc TEXT NOT NULL
+                                             Phone TEXT NOT NULL,
+                                             ServiceType TEXT NOT NULL,
+                                             CreatedUtc TEXT NOT NULL,
+                                             PRIMARY KEY (Phone, ServiceType)
                                          );
                                          """, ct);
         }

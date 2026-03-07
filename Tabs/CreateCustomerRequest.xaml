@@ -1,14 +1,14 @@
-﻿<Page x:Class="Reports.SignatureForm"
+﻿<Page x:Class="Reports.Tabs.CreateCustomerRequest"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             FlowDirection="RightToLeft"
+             ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
              ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
              Foreground="{DynamicResource TextFillColorPrimaryBrush}"
              mc:Ignorable="d"
-             >
+             FlowDirection="RightToLeft">
     <Grid Margin="5" VerticalAlignment="Top">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -16,77 +16,68 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Grid HorizontalAlignment="Center" Margin="0 16 0 16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Margin="16 8 -55 8">
 
-            <ui:TextBlock Text="אוטותל" 
-                          VerticalAlignment="Center" 
-                          HorizontalAlignment="Right"
-                          Margin="0,0,10,0"
-                          Grid.Column="0"/>
+                <StackPanel>
+                    <RadioButton x:Name="RB_Shutuf" GroupName="CarOptions" HorizontalAlignment="Right" />
+                    <TextBlock Text="שיתוף" HorizontalAlignment="Left" />
+                </StackPanel>
+                <StackPanel>
+                    <RadioButton x:Name="RB_Mobility" GroupName="CarOptions" HorizontalAlignment="Right" />
+                    <TextBlock Text="מוביליטי" HorizontalAlignment="Left" />
+                </StackPanel>
+                <StackPanel>
+                    <RadioButton x:Name="RB_Colmobil" GroupName="CarOptions" HorizontalAlignment="Right" IsChecked="True" />
+                    <TextBlock Text="כולמוביל" HorizontalAlignment="Left" />
+                </StackPanel>
+        </StackPanel>
 
-            <ui:ToggleSwitch x:Name="ToggleOption"
-                             Width="50"
-                             Height="28"
-                             IsChecked="False"
-                             VerticalAlignment="Center"
-                             Grid.Column="1"/>
 
-            <ui:TextBlock Text="גוטו"
-                          VerticalAlignment="Center"
-                          HorizontalAlignment="Left"
-                          Margin="10,0,0,0"
-                          Grid.Column="2"/>
-        </Grid>
+
 
         <!-- Card with form -->
         <ui:Card x:Name="RootForm" Grid.Row="1" Padding="20" Margin="0,0,0,10" Background="Transparent">
             <StackPanel Orientation="Vertical" >
 
-                <!-- Section Title -->
-                <ui:TextBlock Text="פרטי דו״ח"
-                           Margin="0,0,0,0"
-                           />
-                <ui:TextBox x:Name="For"
-                            PlaceholderText="לכבוד"
-                         Margin="0,5" 
-                         />
-                <!-- Numeric Fields -->
-                <ui:TextBox x:Name="Report"
-                            PlaceholderText="מס' דוח"
-                         PreviewTextInput="NumberOnly" 
-                         Margin="0,5" />
+                <ui:TextBlock Text="פרטי שיוך"
+                           Margin="0,0,0,0"/>
                 <ui:TextBox x:Name="Car"
+                            PreviewTextInput="NumberOnly"
                             PlaceholderText="מס' רכב"
-                         PreviewTextInput="NumberOnly" 
-                         Margin="0,5"
-                         />
+                            Margin="0,5"/>
+                <!-- Section Title -->
+                <ui:TextBox x:Name="StartTime"
+                            PlaceholderText="זמן התחלה"
+                         Margin="0,5"/>
+                <!-- Numeric Fields -->
+                <ui:TextBox x:Name="EndTime"
+                            PlaceholderText="זמן סיום"
+                         Margin="0,5" />
 
                 <!-- Section Title -->
                 <ui:TextBlock Text="פרטי לקוח"
                            Margin="0,10,0,0"/>
+
                 <!-- Regular Text Fields -->
-                <ui:TextBox x:Name="Name" 
+                <ui:TextBox x:Name="Name"
                             PlaceholderText="שם לקוח"
-                         Margin="0,5" 
-                         />
+                         Margin="0,5" />
                 <ui:TextBox x:Name="Id" 
                             PlaceholderText="מס' ת.ז"
                          Margin="0,5" 
                          />
-                <ui:TextBox x:Name="License"
-                            PlaceholderText="מס' רישיון"
-                         Margin="0,5" />
-                <ui:TextBox x:Name="Address"
+                <ui:TextBox x:Name="Email" 
+                            PlaceholderText="אימייל"
+                            Margin="0,5" 
+                />
+                <ui:TextBox x:Name="AddressName"
                             PlaceholderText="כתובת"
-                         Margin="0,5" />
+                         Margin="0,5" 
+                         />
 
                 <!-- Submit Button -->
-                <ui:Button Content="צור טופס חתימה"
+                <ui:Button Content="שלח מייל בקשה"
+                           x:Name="SubmitButton"
                         Margin="0,20,0,0"
                         HorizontalAlignment="Stretch"
                         IsDefault="True"
@@ -108,7 +99,7 @@
                     VerticalAlignment="Center">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                     <ui:ProgressRing Width="40" Height="40" IsIndeterminate="True" Margin="0,0,0,12"/>
-                    <ui:TextBlock Text="יוצר את החתימה... רגע סבלנות"
+                    <ui:TextBlock Text="יוצר את המייל... רגע סבלנות"
                                   HorizontalAlignment="Center"
                                   FontSize="14"
                                   TextAlignment="Center"/>

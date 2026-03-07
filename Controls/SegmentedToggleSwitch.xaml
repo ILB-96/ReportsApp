@@ -1,0 +1,32 @@
+﻿<UserControl x:Class="Reports.Controls.SegmentedToggleSwitch"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             x:Name="Root">
+    <Grid HorizontalAlignment="{Binding HorizontalAlignment, ElementName=Root}"
+          Margin="{Binding OuterMargin, ElementName=Root}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <ui:TextBlock Grid.Column="0"
+                      Text="{Binding LeftText, ElementName=Root}"
+                      VerticalAlignment="Center"
+                      HorizontalAlignment="Right"
+                      Margin="{Binding LeftMargin, ElementName=Root}"/>
+
+        <ui:ToggleSwitch Grid.Column="1"
+                         Width="{Binding SwitchWidth, ElementName=Root}"
+                         Height="{Binding SwitchHeight, ElementName=Root}"
+                         VerticalAlignment="Center"
+                         IsChecked="{Binding IsChecked, ElementName=Root, Mode=TwoWay}"/>
+
+        <ui:TextBlock Grid.Column="2"
+                      Text="{Binding RightText, ElementName=Root}"
+                      VerticalAlignment="Center"
+                      HorizontalAlignment="Left"
+                      Margin="{Binding RightMargin, ElementName=Root}"/>
+    </Grid>
+</UserControl>

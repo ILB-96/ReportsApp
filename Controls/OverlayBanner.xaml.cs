@@ -16,7 +16,7 @@ namespace Reports.Controls
         public async Task ShowAsync(
             bool success,
             string text,
-            int milliseconds = 2500)
+            int milliseconds = 5000)
         {
             var successBrush = TryFindResource("SystemFillColorSuccessBrush") as Brush
                                ?? new SolidColorBrush(Color.FromRgb(0x2E, 0x7D, 0x32));
@@ -26,6 +26,10 @@ namespace Reports.Controls
 
             var textBrush = TryFindResource("TextOnAccentFillColorPrimaryBrush") as Brush
                             ?? Brushes.White;
+            if (!success)
+            {
+                Console.WriteLine(text);
+            }
 
             Banner.Background = success ? successBrush : dangerBrush;
             Icon.Foreground = textBrush;
@@ -37,6 +41,8 @@ namespace Reports.Controls
             Banner.Visibility = Visibility.Visible;
 
             (Resources["ShowStoryboard"] as Storyboard)?.Begin();
+            
+
             await Task.Delay(milliseconds);
 
             (Resources["HideStoryboard"] as Storyboard)?.Begin();

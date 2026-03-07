@@ -1,14 +1,17 @@
-﻿<Page x:Class="Reports.CreateCustomerRequest"
+﻿<Page x:Class="Reports.Tabs.ReservationForm"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+             xmlns:controls="clr-namespace:Reports.Controls"
+             FlowDirection="RightToLeft"
+             d:DesignHeight="400"
+             d:DesignWidth="300"
              ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
              Foreground="{DynamicResource TextFillColorPrimaryBrush}"
              mc:Ignorable="d"
-             FlowDirection="RightToLeft">
+             >
     <Grid Margin="5" VerticalAlignment="Top">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -16,68 +19,60 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Margin="16 8 -55 8">
-
-                <StackPanel>
-                    <RadioButton x:Name="RB_Shutuf" GroupName="CarOptions" HorizontalAlignment="Right" />
-                    <TextBlock Text="שיתוף" HorizontalAlignment="Left" />
-                </StackPanel>
-                <StackPanel>
-                    <RadioButton x:Name="RB_Mobility" GroupName="CarOptions" HorizontalAlignment="Right" />
-                    <TextBlock Text="מוביליטי" HorizontalAlignment="Left" />
-                </StackPanel>
-                <StackPanel>
-                    <RadioButton x:Name="RB_Colmobil" GroupName="CarOptions" HorizontalAlignment="Right" IsChecked="True" />
-                    <TextBlock Text="כולמוביל" HorizontalAlignment="Left" />
-                </StackPanel>
-        </StackPanel>
-
-
-
+        <controls:SegmentedToggleSwitch
+            x:Name="TogglePanel"
+            LeftText="אוטותל"
+            RightText="גוטו"
+            IsChecked="{Binding IsGoto, Mode=TwoWay}"
+            HorizontalAlignment="Center"/>
 
         <!-- Card with form -->
         <ui:Card x:Name="RootForm" Grid.Row="1" Padding="20" Margin="0,0,0,10" Background="Transparent">
             <StackPanel Orientation="Vertical" >
-
-                <ui:TextBlock Text="פרטי שיוך"
-                           Margin="0,0,0,0"/>
-                <ui:TextBox x:Name="Car"
-                            PreviewTextInput="NumberOnly"
-                            PlaceholderText="מס' רכב"
-                            Margin="0,5"/>
-                <!-- Section Title -->
-                <ui:TextBox x:Name="StartTime"
-                            PlaceholderText="זמן התחלה"
-                         Margin="0,5"/>
-                <!-- Numeric Fields -->
-                <ui:TextBox x:Name="EndTime"
-                            PlaceholderText="זמן סיום"
-                         Margin="0,5" />
-
-                <!-- Section Title -->
-                <ui:TextBlock Text="פרטי לקוח"
-                           Margin="0,10,0,0"/>
-
+                
                 <!-- Regular Text Fields -->
-                <ui:TextBox x:Name="Name"
+                <ui:TextBox x:Name="Name" 
                             PlaceholderText="שם לקוח"
-                         Margin="0,5" />
-                <ui:TextBox x:Name="Id" 
-                            PlaceholderText="מס' ת.ז"
                          Margin="0,5" 
                          />
-                <ui:TextBox x:Name="Email" 
-                            PlaceholderText="אימייל"
+                <ui:TextBox x:Name="Id" 
+                            PlaceholderText="ת.ז לקוח"
                             Margin="0,5" 
                 />
-                <ui:TextBox x:Name="AddressName"
+                <ui:TextBox x:Name="Car"
+                            PlaceholderText="סוג מכונית"
+                            Margin="0,5" 
+                />
+                <ui:TextBox x:Name="CarId"
+                            PlaceholderText="לוחית רישוי"
+                            Margin="0,5" 
+                />
+                <ui:TextBox x:Name="Address"
                             PlaceholderText="כתובת"
-                         Margin="0,5" 
-                         />
+                            Margin="0,5" 
+                />
+                
+                <ui:TextBox x:Name="Start"
+                            PlaceholderText="תאריך התחלה"
+                            Margin="0,5" 
+                />
+                <ui:TextBox x:Name="End"
+                            PlaceholderText="תאריך סיום"
+                            Margin="0,5" 
+                />
+                
+                <ui:TextBox x:Name="Reservation"
+                            PlaceholderText="מס' הזמנה"
+                            Margin="0,5" 
+                />
+                
+                <ui:TextBox x:Name="Km"
+                            PlaceholderText="מס' קילומטר"
+                            Margin="0,5" 
+                />
 
                 <!-- Submit Button -->
-                <ui:Button Content="שלח מייל בקשה"
-                           x:Name="SubmitButton"
+                <ui:Button Content="צור קבלה להזמנה"
                         Margin="0,20,0,0"
                         HorizontalAlignment="Stretch"
                         IsDefault="True"
@@ -99,7 +94,7 @@
                     VerticalAlignment="Center">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                     <ui:ProgressRing Width="40" Height="40" IsIndeterminate="True" Margin="0,0,0,12"/>
-                    <ui:TextBlock Text="יוצר את המייל... רגע סבלנות"
+                    <ui:TextBlock Text="יוצר את הקבלה... רגע סבלנות"
                                   HorizontalAlignment="Center"
                                   FontSize="14"
                                   TextAlignment="Center"/>

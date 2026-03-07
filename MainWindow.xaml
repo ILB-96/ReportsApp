@@ -5,6 +5,7 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:tabs="clr-namespace:Reports.Tabs"
         FlowDirection="RightToLeft"
         Title="FinesDesk"
         MinWidth="300"
@@ -41,8 +42,8 @@
             <ui:NavigationView.MenuItems>
                 <ui:NavigationViewItem Content="חתימה"
                                        Tag="SignatureForm"
-                                       TargetPageType="{x:Type reports:SignatureForm}"
-                                       NavigationCacheMode="Enabled"
+                                       NavigationCacheMode="Disabled"
+                                       TargetPageType="{x:Type tabs:SignatureForm}"
                                        FocusVisualStyle="{x:Null}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="Signature16"/>
@@ -51,18 +52,28 @@
 
                 <ui:NavigationViewItem Content="לקוח"
                                        Tag="CreateCustomerRequest"
-                                       TargetPageType="{x:Type reports:CreateCustomerRequest}"
-                                       NavigationCacheMode="Enabled"
+                                       NavigationCacheMode="Disabled"
+                                       TargetPageType="{x:Type tabs:CreateCustomerRequest}"
+                                       FocusVisualStyle="{x:Null}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Mail16"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+                <ui:NavigationViewItem Content="תפעול"
+                                       Tag="CreateOperationMail"
+                                       NavigationCacheMode="Disabled"
+                                       TargetPageType="{x:Type tabs:CreateOperationMail}"
                                        FocusVisualStyle="{x:Null}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="Mail16"/>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
 
+
                 <ui:NavigationViewItem Content="הסכם"
                                        Tag="AgreementForm"
-                                       TargetPageType="{x:Type reports:AgreementForm}"
-                                       NavigationCacheMode="Enabled"
+                                       TargetPageType="{x:Type tabs:AgreementForm}"
+                                       NavigationCacheMode="Disabled"
                                        FocusVisualStyle="{x:Null}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="Document16"/>
@@ -70,8 +81,9 @@
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="הזמנה"
                                        Tag="ReservationForm"
-                                       TargetPageType="{x:Type reports:ReservationForm}"
-                                       NavigationCacheMode="Enabled"
+                                       NavigationCacheMode="Disabled"
+                                       TargetPageType="{x:Type tabs:ReservationForm}"
+
                                        FocusVisualStyle="{x:Null}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="VehicleCarParking16"/>
@@ -79,8 +91,8 @@
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="קיצורים"
                                        Tag="Shortcuts"
-                                       TargetPageType="{x:Type reports:ShortcutsPage}"
-                                       NavigationCacheMode="Enabled"
+                                       NavigationCacheMode="Disabled"
+                                       TargetPageType="{x:Type tabs:ShortcutsPage}"
                                        FocusVisualStyle="{x:Null}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="Copy16"/>
@@ -88,8 +100,8 @@
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="נהג"
                                        Tag="Driver"
-                                       TargetPageType="{x:Type reports:CreateDriverForm}"
-                                       NavigationCacheMode="Enabled"
+                                       TargetPageType="{x:Type tabs:CreateDriverForm}"
+                                       NavigationCacheMode="Disabled"
                                        FocusVisualStyle="{x:Null}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="ContactCard16"/>

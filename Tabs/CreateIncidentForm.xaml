@@ -1,10 +1,11 @@
-﻿<Page x:Class="Reports.CreateDriverForm"
+﻿<Page x:Class="Reports.Tabs.CreateIncidentForm"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="clr-namespace:Reports.Controls"
+             xmlns:shared="clr-namespace:Reports.Utilities"
              FlowDirection="RightToLeft"
              d:DesignHeight="900"
              d:DesignWidth="600"
@@ -17,34 +18,6 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-
-        <!-- Header -->
-        <Grid HorizontalAlignment="Center" Margin="0 16 0 16" x:Name="TogglePanel" >
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <ui:TextBlock Text="אוטותל" 
-                          VerticalAlignment="Center" 
-                          HorizontalAlignment="Right"
-                          Margin="0,0,10,0"
-                          Grid.Column="0"/>
-
-            <ui:ToggleSwitch x:Name="ToggleOption"
-                             Width="50"
-                             Height="28"
-                             IsChecked="False"
-                             VerticalAlignment="Center"
-                             Grid.Column="1"/>
-
-            <ui:TextBlock Text="גוטו"
-                          VerticalAlignment="Center"
-                          HorizontalAlignment="Left"
-                          Margin="10,0,0,0"
-                          Grid.Column="2"/>
-        </Grid>
 
         <!-- Card with form -->
         <ui:Card Grid.Row="1" Padding="20" Margin="0,0,0,10" Background="Transparent" x:Name="InputPanel">
@@ -65,9 +38,12 @@
                 <ui:TextBox Grid.Row="0" Grid.Column="1" x:Name="Url" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
                 
                 <TextBlock Grid.Row="1" Grid.Column="0" Text="עוגיות:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="1" Grid.Column="1" x:Name="Cookies" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
-                
-
+                <ui:TextBox Grid.Row="1" Grid.Column="1"
+                          x:Name="Cookies"
+                          Margin="0,5,0,0"
+                          Text="{x:Static shared:UserSettings.LastCookie}"
+                          HorizontalAlignment="Stretch"
+                          FlowDirection="RightToLeft"/>
                 <!-- Submit Button -->
                 <ui:Button Content="יצא" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="1" 
                         Margin="0,20,0,0"
@@ -77,27 +53,6 @@
                         MaxWidth="150"
                         Appearance="Primary"
                         FontWeight="Bold"/>
-                <ui:Button x:Name="ClearExcelButton"
-                           Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="1"
-                           Content="נקה שורות מאקסל"
-                           Margin="0,20,0,0"
-                           
-                           HorizontalAlignment="Stretch"
-                           Appearance="Info"
-                           MaxWidth="150"
-                           Background="#B91C1C"
-                           MouseOverBackground="#DC2626"
-                           PressedBackground="#991B1B"
-                           Click="ClearExcelMenu_Click">
-
-                    <ui:Button.ContextMenu>
-                        <ContextMenu FlowDirection="RightToLeft">
-                            <MenuItem Header="נקה קובץ גוטו" Tag="goto" Click="ClearExcel_Click"/>
-                            <MenuItem Header="נקה קובץ אוטותל" Tag="autotel" Click="ClearExcel_Click"/>
-                            <MenuItem Header="נקה קובץ ליסינג" Tag="leasing" Click="ClearExcel_Click"/>
-                        </ContextMenu>
-                    </ui:Button.ContextMenu>
-                </ui:Button>
             </Grid>
         </ui:Card>
         <ui:Card Grid.Row="1"

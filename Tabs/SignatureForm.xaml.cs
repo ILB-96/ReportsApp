@@ -1,24 +1,32 @@
-﻿using System.Windows.Controls;
-using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using Microsoft.Extensions.DependencyInjection;
+using Reports.Services;
 using Reports.Utilities;
-using Xceed.Document.NET;
 using Xceed.Words.NET;
 
-namespace Reports;
+namespace Reports.Tabs;
 
 public partial class SignatureForm
 {
-    public SignatureForm()
-    {
-        InitializeComponent();
-    }
+        private readonly AppConfig _config;
+        public SignatureForm() : this(App.Services.GetRequiredService<AppConfig>(), App.Services.GetRequiredService<ChromeTabsStore>())
+        {
+        }
+
+        public SignatureForm(AppConfig config, ChromeTabsStore requiredService)
+        {
+            InitializeComponent();
+            _config = config;
+            DataContext = _config;
+        }
+    
             // Allow only numbers
         private void NumberOnly(object sender, TextCompositionEventArgs e)
         {
@@ -30,7 +38,7 @@ public partial class SignatureForm
             LoadingOverlay.Visibility = Visibility.Visible;
             RootForm.IsEnabled = false;
             
-            var toggle = ToggleOption.IsChecked == true ? "goto" : "autotel";
+            var toggle = TogglePanel.IsChecked ? "goto" : "autotel";
             
             var options = new FieldCollectorOptions
             {
@@ -58,7 +66,7 @@ public partial class SignatureForm
                 {
                     // Extract embedded template to memory
                     var assembly = Assembly.GetExecutingAssembly();
-                    var resourceName = $"Reports.{toggle}_autograph.docx";
+                    var resourceName = _config.SignatureTemplate(toggle);
 
 
 

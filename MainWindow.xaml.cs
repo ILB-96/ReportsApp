@@ -1,15 +1,23 @@
-﻿using System.Windows;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Net;
+using System.Text;
+using System.Text.Json;
+using System.Windows;
 
+namespace Reports;
 
-namespace Reports
+public partial class MainWindow
 {
-    public partial class MainWindow
+    public MainWindow()
     {
-        public MainWindow()
+        InitializeComponent();
+
+        Loaded += (_, _) =>
         {
-            InitializeComponent();
-            
-            Loaded += (_, _) => RootNavigation.Navigate(typeof(SignatureForm));
-        }
+            // Navigate by TYPE (this is what your Wpf.Ui version supports)
+            RootNavigation.Navigate(typeof(Tabs.SignatureForm));
+        };
     }
 }

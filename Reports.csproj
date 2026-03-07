@@ -15,47 +15,90 @@
       <PackageReference Include="EPPlus" Version="8.4.1" />
       <PackageReference Include="FreeSpire.Doc" Version="12.2.0" />
       <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.2" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
       <PackageReference Include="Microsoft.Office.Interop.Excel" Version="16.0.18925.20022" />
       <PackageReference Include="Microsoft.Office.Interop.Outlook" Version="15.0.4797.1004" />
-      <PackageReference Include="Microsoft.Office.Interop.Word" Version="15.0.4797.1004" />
       <PackageReference Include="WPF-UI" Version="4.0.3" />
     </ItemGroup>
 
     <ItemGroup>
       <None Remove="autotel autograph.docx" />
+      <Resource Include="Assets\appeal_fine.html" />
       <Resource Include="Assets\goto_header.png" />
-      <Resource Include="Assets\goto_paid_fine.html" />
-      <EmbeddedResource Include="autotel_autograph.docx" />
+      <Resource Include="Assets\municipal_fine.html" />
+      <Resource Include="Assets\paid_fine.html" />
+      <EmbeddedResource Include="Assets\autotel_agreement.docx" />
+      <EmbeddedResource Include="Assets\autotel_autograph.docx" />
+      <EmbeddedResource Include="Assets\autotel_reservation.docx" />
+      <EmbeddedResource Include="Assets\goto_agreement.docx" />
+      <EmbeddedResource Include="Assets\goto_autograph.docx" />
+      <EmbeddedResource Include="Assets\goto_reservation.docx" />
       <None Remove="goto_autograph.docx" />
-      <EmbeddedResource Include="goto_autograph.docx" />
       <None Remove="autotel_agreement.docx" />
-      <EmbeddedResource Include="autotel_agreement.docx" />
       <None Remove="goto_agreement.docx" />
-      <EmbeddedResource Include="goto_agreement.docx" />
       <None Remove="goto_reservation.docx" />
-      <EmbeddedResource Include="goto_reservation.docx" />
       <None Remove="autotel_reservation.docx" />
-      <EmbeddedResource Include="autotel_reservation.docx" />
       <None Remove="goto_paid_fine.html" />
       <None Remove="goto_header.png" />
       <None Remove="goto_footer.png" />
       <None Remove="Assets\autotel_paid_fine.html" />
-      <Resource Include="Assets\autotel_paid_fine.html" />
       <None Remove="Assets\autotel_footer.png" />
       <None Remove="Assets\autotel_header.png" />
       <Resource Include="Assets\autotel_header.png" />
       <None Remove="Assets\transport_fine.html" />
+      <Resource Include="Assets\police_fine.html" />
       <Resource Include="Assets\not_transport_fine.html" />
+      <Resource Include="Assets\transfer_process.html" />
+      <Resource Include="Assets\transfer_process_en.html" />
       <Resource Include="Assets\transport_fine.html" />
+      <Resource Include="Assets\transport_fine_en.html" />
+      <None Remove="Assets\leasing_footer.png" />
+      <Resource Include="Assets\leasing_footer.png" />
+      <None Remove="Assets\goto_footer.png" />
+      <Resource Include="Assets\goto_footer.png" />
+      <None Update="appsettings.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
     <ItemGroup>
-      <Page Update="AgreementForm.xaml">
+      <Page Update="Tabs\AgreementForm.xaml">
         <Generator>MSBuild:Compile</Generator>
         <XamlRuntime>Wpf</XamlRuntime>
         <SubType>Designer</SubType>
       </Page>
-      <Page Update="CreateDriverForm.xaml">
+      <Page Update="Tabs\ReservationForm.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+      <Page Update="Tabs\ShortcutsPage.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+      <Page Update="Tabs\SignatureForm.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+      <Page Update="Tabs\CreateDriverForm.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+      <Page Update="Tabs\CreateCustomerRequest.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+      <Page Update="Tabs\CreateIncidentForm.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+      <Page Update="Tabs\CreateOperationMail.xaml">
         <Generator>MSBuild:Compile</Generator>
         <XamlRuntime>Wpf</XamlRuntime>
         <SubType>Designer</SubType>

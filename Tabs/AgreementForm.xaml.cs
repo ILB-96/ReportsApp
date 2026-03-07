@@ -1,25 +1,34 @@
-﻿
-using System.IO;
-
-using Reports.Utilities;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Extensions.DependencyInjection;
+using Reports.Services;
+using Reports.Utilities;
 
-
-namespace Reports
+namespace Reports.Tabs
 {
     public partial class AgreementForm : Page
     {
-        public AgreementForm()
+        private readonly AppConfig _config;
+        public AgreementForm() : this(App.Services.GetRequiredService<AppConfig>(), App.Services.GetRequiredService<ChromeTabsStore>())
         {
-            InitializeComponent();
         }
 
+        public AgreementForm(AppConfig config, ChromeTabsStore requiredService)
+        {
+            InitializeComponent();
+            _config = config;
+            DataContext = _config;
+        }
         private async void Submit_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                var toggle = ToggleOption.IsChecked == true ? "goto" : "autotel";
+                await Loading.ShowAsync("יוצר את ההסכם... רגע סבלנות", "זה יכול לקחת עד כמה שניות...");
+                RootForm.IsEnabled = false;
+                TogglePanel.IsEnabled = false;
+                
+                var toggle = TogglePanel.IsChecked ? "goto" : "autotel";
 
                 var options = new FieldCollectorOptions
                 {
@@ -40,16 +49,12 @@ namespace Reports
                 var safeName = FileNameUtils.SanitizeFileName(nameValue ?? string.Empty);
 
                 var docxPath = Path.Combine(downloadsPath, $"Agreement - {safeName}.docx");
-                var resourceName = $"Reports.{toggle}_agreement.docx";
+                var resourceName = _config.AgreementTemplate(toggle);
                 await DocxTemplateGenerator.GenerateFromEmbeddedAsync(
                     embeddedResourceName: resourceName,
                     outputPath: docxPath,
                     tokens: fields);
-                DocxTemplateGenerator.OpenInShell(docxPath);
-
-                await Loading.ShowAsync("יוצר את ההסכם... רגע סבלנות", "זה יכול לקחת עד כמה שניות...");
-                RootForm.IsEnabled = false;
-                ToggleOption.IsEnabled = false;
+                await DocxTemplateGenerator.SaveToPdf(docxPath);
 
                 foreach (var tb in FormFieldCollector.FindVisualChildren<TextBox>(RootForm))
                     tb.Clear();
@@ -69,7 +74,7 @@ namespace Reports
             {
                 await Loading.HideAsync();
                 RootForm.IsEnabled = true;
-                ToggleOption.IsEnabled = true;
+                TogglePanel.IsEnabled = true;
             }
         }
     }
