@@ -1,13 +1,16 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Reports.Services;
+using Reports.Services.Templates;
 using Reports.Utilities;
 using Xceed.Words.NET;
 
@@ -15,16 +18,13 @@ namespace Reports.Tabs;
 
 public partial class SignatureForm
 {
-        private readonly AppConfig _config;
-        public SignatureForm() : this(App.Services.GetRequiredService<AppConfig>(), App.Services.GetRequiredService<ChromeTabsStore>())
-        {
-        }
-
-        public SignatureForm(AppConfig config, ChromeTabsStore requiredService)
+        private readonly ITemplateCatalog _templateCatalog;
+        
+        public SignatureForm(ITemplateCatalog templateCatalog)
         {
             InitializeComponent();
-            _config = config;
-            DataContext = _config;
+            _templateCatalog = templateCatalog;
+            DataContext = this;
         }
     
             // Allow only numbers
@@ -66,7 +66,7 @@ public partial class SignatureForm
                 {
                     // Extract embedded template to memory
                     var assembly = Assembly.GetExecutingAssembly();
-                    var resourceName = _config.SignatureTemplate(toggle);
+                    var resourceName = _templateCatalog.SignatureTemplate(toggle);
 
 
 

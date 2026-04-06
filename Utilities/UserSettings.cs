@@ -25,14 +25,14 @@ public static class UserSettings
         LastCookie = data?.LastCookie ?? "";
     }
 
-    public static bool IsNewCookies(string cookies)
+    private static bool IsNewCookies(string cookies)
     {
-        return !string.IsNullOrWhiteSpace(cookies) && (string.IsNullOrWhiteSpace(LastCookie) || cookies != LastCookie);
+        return string.IsNullOrWhiteSpace(LastCookie) || cookies != LastCookie;
     }
 
     public static void Save(string cookies)
     {
-        if (!IsNewCookies(cookies))
+        if (string.IsNullOrWhiteSpace(cookies) || !IsNewCookies(cookies))
         {
             return;
         }

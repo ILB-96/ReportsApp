@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using ClosedXML.Excel;
+using Reports.Services.Drivers;
 
 namespace Reports.Services.Export;
 
@@ -31,7 +32,7 @@ public static class DriversExportService
         workbook.Save();
     }
 
-    public static void AppendRow(string excelPath, IReadOnlyDictionary<string, Dictionary<string, object>> row, int sheetIndex = 1)
+    public static void AppendRow(string excelPath, Dictionary<string, DriverRowValue> row, int sheetIndex = 1)
     {
         using var workbook = File.Exists(excelPath) ? new XLWorkbook(excelPath) : new XLWorkbook();
         var ws = workbook.Worksheets.Count >= sheetIndex ? workbook.Worksheet(sheetIndex) : workbook.AddWorksheet("Sheet1");
@@ -40,7 +41,7 @@ public static class DriversExportService
         var newRow = lastRow is not null ? lastRow.RowNumber() + 1 : 1;
 
         foreach (var kvp in row)
-            ws.Cell(newRow, Convert.ToInt32(kvp.Value["Col"])).Value = kvp.Value["Val"].ToString() ?? string.Empty;
+            ws.Cell(newRow, Convert.ToInt32(kvp.Value.Col)).Value = kvp.Value.Val;
 
         workbook.SaveAs(excelPath);
     }

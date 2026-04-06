@@ -9,18 +9,18 @@ namespace Reports.Tabs;
 
 public partial class CreateIncidentForm : Page
 {
-    private readonly AppConfig _config;
+    private readonly ICrmBrandResolver _brandResolver;
+    
+    public ChromeTabsStore TabsStore { get; }
 
-    public CreateIncidentForm() : this(App.Services.GetRequiredService<AppConfig>())
-    {
-    }
-
-    public CreateIncidentForm(AppConfig config)
+    public CreateIncidentForm(
+        ChromeTabsStore tabsStore,
+        ICrmBrandResolver brandResolver)
     {
         InitializeComponent();
-        _config = config;
-        
-        DataContext = App.Services.GetRequiredService<AppConfig>();
+        TabsStore = tabsStore;
+        _brandResolver = brandResolver;
+        DataContext = this;
     }
 
     private async void Submit_Click(object sender, RoutedEventArgs e)
@@ -29,8 +29,8 @@ public partial class CreateIncidentForm : Page
         {
             using (Loading.BeginScope("מיצא את פרטי הנהג... רגע סבלנות", "זה יכול לקחת עד כמה שניות..."))
             {
-                var brand = _config.ServiceTypeFromUrl(Url.Text);
-                var baseUri = _config.BaseUri(brand);
+                var brand = _brandResolver.ServiceTypeFromUrl(Url.Text);
+                var baseUri = _brandResolver.BaseUri(brand);
 
                 var cookiesRaw = Cookies.Text.Trim();
                 UserSettings.Save(cookiesRaw);
@@ -74,7 +74,7 @@ public partial class CreateIncidentForm : Page
     {
         try
         {
-            var brand = _config.ServiceTypeFromUrl(Url.Text);
+            var brand = _brandResolver.ServiceTypeFromUrl(Url.Text);
             var serviceType = GetServiceType(brand);
             using (Loading.BeginScope("מייצר נהג... רגע סבלנות", "זה יכול לקחת עד כמה שניות..."))
             {
@@ -84,7 +84,7 @@ public partial class CreateIncidentForm : Page
                 ShowFirstPage();
             }
 
-            await Overlay.ShowAsync(true, $"שורה נוספה לקובץ {_config.DriversFile(serviceType)}", 4000);
+            await Overlay.ShowAsync(true, $"נוצר קייס בהצלחה", 4000);
         }
         catch (Exception ex)
         {

@@ -1,18 +1,16 @@
-﻿<Page x:Class="Reports.Tabs.CreateDriverForm"
+﻿<Page x:Class="Reports.Tabs.CreateDriver.CreateDriverPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="clr-namespace:Reports.Controls"
-             xmlns:shared="clr-namespace:Reports.Utilities"
              FlowDirection="RightToLeft"
              d:DesignHeight="900"
              d:DesignWidth="600"
              ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
              Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-             mc:Ignorable="d"
-             >
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance }">
     <Grid Margin="5" VerticalAlignment="Top" >
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -20,7 +18,7 @@
         </Grid.RowDefinitions>
 
         <!-- Card with form -->
-        <ui:Card Grid.Row="1" Padding="20" Margin="0,0,0,10" Background="Transparent" x:Name="InputPanel">
+        <ui:Card Grid.Row="1" Padding="20" Margin="0,0,0,10" Background="Transparent" Visibility="{Binding View.InputPanelVisibility}">
             <Grid Grid.IsSharedSizeScope="True" FlowDirection="RightToLeft">
                 <Grid.ColumnDefinitions>
                     <!-- Pair #1 -->
@@ -37,18 +35,17 @@
                 <TextBlock Grid.Row="0" Grid.Column="0" Text="לינק קייס:" VerticalAlignment="Center" Margin="0,5,8,0"/>
                 <controls:FuzzyUrlComboBox Grid.Row="0" Grid.Column="1"
                                            x:Name="Url"
-                                           ItemsSource="{Binding TabUrls}"
-                                           Text="{Binding SelectedUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                           ItemsSource="{Binding TabsStore.TabUrls}"
+                                           Text="{Binding View.Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 
                 <TextBlock Grid.Row="1" Grid.Column="0" Text="עוגיות:" VerticalAlignment="Center" Margin="0,5,8,0"/>
                 <ui:TextBox Grid.Row="1" Grid.Column="1"
                           x:Name="Cookies"
                           Margin="0,5,0,0"
-                          Text="{x:Static shared:UserSettings.LastCookie}"
-                          HorizontalAlignment="Stretch"
+Text="{Binding View.Cookies, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"                          HorizontalAlignment="Stretch"
                           FlowDirection="RightToLeft"/>
                 <!-- Submit Button -->
-                <ui:Button Content="יצא" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="1" 
+                <ui:Button Content="יצא" Grid.Row="2" Grid.Column="1"
                         Margin="0,20,0,0"
                         HorizontalAlignment="Stretch"
                         IsDefault="True"
@@ -57,7 +54,7 @@
                         Appearance="Primary"
                         FontWeight="Bold"/>
                 <ui:Button x:Name="ClearExcelButton"
-                           Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="1"
+                           Grid.Row="2" Grid.Column="0"
                            Content="נקה שורות מאקסל"
                            Margin="0,20,0,0"
                            
@@ -88,9 +85,8 @@
                  Padding="20"
                  Margin="0,0,0,10"
                  Background="Transparent"
-                 Visibility="Collapsed"
-                 FlowDirection="RightToLeft"
-                 x:Name="DataPanel">
+                 Visibility="{Binding View.DataPanelVisibility}"
+                 FlowDirection="RightToLeft">
 
             <!-- One grid = consistent alignment for all rows -->
             <Grid Grid.IsSharedSizeScope="True" FlowDirection="RightToLeft">
@@ -120,68 +116,67 @@
 
                 <!-- Row 0: Start/End date -->
                 <TextBlock Grid.Row="0" Grid.Column="0" Text="תאריך התחלה:" VerticalAlignment="Center" Margin="0,5,8,0" />
-                <ui:TextBox Grid.Row="0" Grid.Column="1" x:Name="ReportStartDateBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                <ui:TextBox Grid.Row="0" Grid.Column="1"  Text="{Binding View.ReportStartDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
 
                 <TextBlock Grid.Row="0" Grid.Column="3" Text="תאריך סיום:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="0" Grid.Column="4" x:Name="ReportEndDateBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                <ui:TextBox Grid.Row="0" Grid.Column="4" Text="{Binding View.ReportEndDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
 
                 <!-- Row 1: License/Reservation -->
                 <TextBlock Grid.Row="1" Grid.Column="0" Text="לוחית רישוי:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="1" Grid.Column="1" x:Name="CarLicenseBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                <ui:TextBox Grid.Row="1" Grid.Column="1" Text="{Binding View.CarLicense, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
 
                 <TextBlock Grid.Row="1" Grid.Column="3" Text="מספר הזמנה:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="1" Grid.Column="4" x:Name="ReservationNumberBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                <ui:TextBox Grid.Row="1" Grid.Column="4" Text="{Binding View.ReservationNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
 
                 <!-- Row 2: Report number / Full name -->
                 <TextBlock Grid.Row="2" Grid.Column="0" Text="מספר דוח:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="2" Grid.Column="1" x:Name="ReportNumberBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                <ui:TextBox Grid.Row="2" Grid.Column="1" Text="{Binding View.ReportNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
 
                 <TextBlock Grid.Row="2" Grid.Column="3" Text="שם מלא:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="2" Grid.Column="4" x:Name="AccountFullNameBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                <ui:TextBox Grid.Row="2" Grid.Column="4" Text="{Binding View.AccountFullName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
 
                 <!-- Row 3: ID / Driver license -->
                 <TextBlock Grid.Row="3" Grid.Column="0" Text="תעודת זהות:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="3" Grid.Column="1" x:Name="DriverIdBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                <ui:TextBox Grid.Row="3" Grid.Column="1" Text="{Binding View.DriverId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
 
                 <TextBlock Grid.Row="3" Grid.Column="3" Text="רישיון נהיגה:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="3" Grid.Column="4" x:Name="DriverLicenseBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                <ui:TextBox Grid.Row="3" Grid.Column="4" Text="{Binding View.DriverLicense, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
 
                 <!-- Row 4: Email / Phone -->
                 <TextBlock Grid.Row="4" Grid.Column="0" Text="אימייל:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="4" Grid.Column="1" x:Name="EmailBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                <ui:TextBox Grid.Row="4" Grid.Column="1" Text="{Binding View.Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
 
                 <TextBlock Grid.Row="4" Grid.Column="3" Text="טלפון:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="4" Grid.Column="4" x:Name="PhoneBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                <ui:TextBox Grid.Row="4" Grid.Column="4" Text="{Binding View.Phone, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
 
                 <!-- Row 5: Address / House -->
                 <TextBlock Grid.Row="5" Grid.Column="0" Text="כתובת:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="5" Grid.Column="1" x:Name="AddressBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                <ui:TextBox Grid.Row="5" Grid.Column="1" Text="{Binding View.Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
 
                 <TextBlock Grid.Row="5" Grid.Column="3" Text="מספר בית:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="5" Grid.Column="4" x:Name="HouseBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                <ui:TextBox Grid.Row="5" Grid.Column="4" Text="{Binding View.House, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
 
                 <!-- Row 6: City / Postal -->
                 <TextBlock Grid.Row="6" Grid.Column="0" Text="עיר:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="6" Grid.Column="1" x:Name="CityBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                <ui:TextBox Grid.Row="6" Grid.Column="1" Text="{Binding View.City, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
 
                 <TextBlock Grid.Row="6" Grid.Column="3" Text="מיקוד:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="6" Grid.Column="4" x:Name="PostalCodeBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                <ui:TextBox Grid.Row="6" Grid.Column="4" Text="{Binding View.PostalCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
                 
                 <TextBlock Grid.Row="7" Grid.Column="3" Text="קישור לדרכון:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="7" Grid.Column="4" x:Name="PassportLinkBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                <ui:TextBox Grid.Row="7" Grid.Column="4" Text="{Binding View.PassportLink, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
 
                 <TextBlock Grid.Row="7" Grid.Column="0" Text="קישור לרישיון:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="7" Grid.Column="1" x:Name="LicenseLinkBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                <ui:TextBox Grid.Row="7" Grid.Column="1" Text="{Binding View.LicenseLink, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
 
 
                 <TextBlock Grid.Row="8" Grid.Column="0" Text="תאריך יצירה:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="8" Grid.Column="1" x:Name="CreatedOnBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                <ui:TextBox Grid.Row="8" Grid.Column="1" Text="{Binding View.CreatedOn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
                 
                 <TextBlock Grid.Row="8" Grid.Column="3" Text="סוג שירות:" VerticalAlignment="Center" Margin="0,5,8,0"/>
                 <controls:FuzzyUrlComboBox Grid.Row="8" Grid.Column="4"
-                                           x:Name="ServiceTypeBox"
                                            ItemsSource="{Binding ServiceTypes}"
-                                           Text="{Binding SelectedUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                           Text="{Binding View.ServiceType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 <!-- <ui:TextBox Grid.Row="8" Grid.Column="4" x:Name="ServiceTypeBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/> -->
                 <!-- Row 9: Button -->
                 
@@ -198,7 +193,6 @@
                            Margin="4,20,0,0"
                            HorizontalAlignment="Stretch"
                            Appearance="Secondary"
-                           
                            Click="PreviousPage_Click"/>
             </Grid>
         </ui:Card>

@@ -1,5 +1,8 @@
-﻿using System.Drawing.Printing;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing.Printing;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,18 +15,18 @@ namespace Reports.Tabs
 {
     public partial class ShortcutsPage
     {
-        private readonly AppConfig _config;
-        private readonly ChromeTabsStore _store;
-        public ShortcutsPage() : this(App.Services.GetRequiredService<AppConfig>(), App.Services.GetRequiredService<ChromeTabsStore>())
-        {
-        }
-        
-        public ShortcutsPage(AppConfig config,  ChromeTabsStore store)
+        private readonly ICrmBrandResolver _brandResolver;
+    
+        public ChromeTabsStore TabsStore { get; }
+
+        public ShortcutsPage(
+            ChromeTabsStore tabsStore,
+            ICrmBrandResolver brandResolver)
         {
             InitializeComponent();
-            _config = config;
-            _store = store;
-            DataContext = _store;
+            TabsStore = tabsStore;
+            _brandResolver = brandResolver;
+            DataContext = this;
         }
         
         private string FillTemplate(string html, Dictionary<string, string> values)
@@ -36,7 +39,7 @@ namespace Reports.Tabs
             try
             {
                 var fileName = (sender as FrameworkElement)?.Tag?.ToString()?.Trim().ToLowerInvariant();
-                var brand = Url.Text.Contains("autotel") ? "autotel" : "goto";
+                var brand = _brandResolver.ServiceTypeFromUrl(Url.Text);
                 var htmlPath = $"Assets/{fileName}.html";
                 var headerPath = $"Assets/{brand}_header.png";
 
@@ -44,7 +47,7 @@ namespace Reports.Tabs
                 var html = LoadTextResource(htmlPath);
 
                 
-                var baseUri = _config.BaseUri(brand);
+                var baseUri = _brandResolver.BaseUri(brand);
 
                 var cookiesRaw = Cookies.Text.Trim();
                 UserSettings.Save(cookiesRaw);

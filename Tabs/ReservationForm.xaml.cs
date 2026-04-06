@@ -1,11 +1,14 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Reports.Services;
+using Reports.Services.Templates;
 using Reports.Utilities;
 using Xceed.Words.NET;
 // <-- use the utilities
@@ -14,16 +17,13 @@ namespace Reports.Tabs
 {
     public partial class ReservationForm : Page
     {
-        private readonly AppConfig _config;
-        public ReservationForm() : this(App.Services.GetRequiredService<AppConfig>(), App.Services.GetRequiredService<ChromeTabsStore>())
-        {
-        }
+        private readonly ITemplateCatalog _templateCatalog;
 
-        public ReservationForm(AppConfig config, ChromeTabsStore requiredService)
+        public ReservationForm(ITemplateCatalog templateCatalog)
         {
             InitializeComponent();
-            _config = config;
-            DataContext = _config;
+            _templateCatalog = templateCatalog;
+            DataContext = this;
         }
 
         private async void Submit_Click(object sender, RoutedEventArgs e)
@@ -66,7 +66,7 @@ namespace Reports.Tabs
                 {
                     // Extract embedded template
                     var assembly = Assembly.GetExecutingAssembly();
-                    var resourceName = _config.ReservationTemplate(templateToggle);
+                    var resourceName = _templateCatalog.ReservationTemplate(templateToggle);
 
                     using Stream? stream = assembly.GetManifestResourceStream(resourceName);
                     if (stream == null)

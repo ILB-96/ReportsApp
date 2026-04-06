@@ -12,8 +12,6 @@ public sealed class AppOptions
 
     public string AgreementPath { get; init; } = string.Empty;
 
-    public string AutographPath { get; init; } = string.Empty;
-
     public string ReservationPath { get; init; } = string.Empty;
     
     public string SignaturePath { get; init; } = string.Empty;

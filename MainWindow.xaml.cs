@@ -5,18 +5,20 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Windows;
+using Wpf.Ui.Abstractions;
 
 namespace Reports;
 
 public partial class MainWindow
 {
-    public MainWindow()
+    public MainWindow(INavigationViewPageProvider pageProvider)
     {
         InitializeComponent();
 
+        RootNavigation.SetPageProviderService(pageProvider);
+
         Loaded += (_, _) =>
         {
-            // Navigate by TYPE (this is what your Wpf.Ui version supports)
             RootNavigation.Navigate(typeof(Tabs.SignatureForm));
         };
     }

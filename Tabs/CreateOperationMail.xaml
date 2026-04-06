@@ -36,7 +36,7 @@
                 <TextBlock Grid.Row="0" Grid.Column="0" Text="לינק קייס:" VerticalAlignment="Center" Margin="0,5,8,0"/>
                 <controls:FuzzyUrlComboBox Grid.Row="0" Grid.Column="1"
                                            x:Name="Url"
-                                           ItemsSource="{Binding TabUrls}"
+                                           ItemsSource="{Binding TabsStore.TabUrls}"
                                            Text="{Binding SelectedUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>                
                 <TextBlock Grid.Row="1" Grid.Column="0" Text="עוגיות:" VerticalAlignment="Center" Margin="0,5,8,0"/>
                 <ui:TextBox Grid.Row="1" Grid.Column="1" 

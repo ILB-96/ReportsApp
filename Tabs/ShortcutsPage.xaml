@@ -44,7 +44,7 @@
 
                     <controls:FuzzyUrlComboBox Grid.Column="1"
                                                x:Name="Url"
-                                                    ItemsSource="{Binding TabUrls}"
+                                                    ItemsSource="{Binding TabsStore.TabUrls}"
                                                     Text="{Binding SelectedUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 </Grid>
 

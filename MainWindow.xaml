@@ -1,11 +1,11 @@
 ﻿<ui:FluentWindow x:Class="Reports.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:reports="clr-namespace:Reports"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:tabs="clr-namespace:Reports.Tabs"
+        xmlns:tabs.CreateDriver="clr-namespace:Reports.Tabs.CreateDriver"
         FlowDirection="RightToLeft"
         Title="FinesDesk"
         MinWidth="300"
@@ -83,7 +83,6 @@
                                        Tag="ReservationForm"
                                        NavigationCacheMode="Disabled"
                                        TargetPageType="{x:Type tabs:ReservationForm}"
-
                                        FocusVisualStyle="{x:Null}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="VehicleCarParking16"/>
@@ -100,7 +99,7 @@
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="נהג"
                                        Tag="Driver"
-                                       TargetPageType="{x:Type tabs:CreateDriverForm}"
+                                       TargetPageType="{x:Type tabs.CreateDriver:CreateDriverPage}"
                                        NavigationCacheMode="Disabled"
                                        FocusVisualStyle="{x:Null}">
                     <ui:NavigationViewItem.Icon>

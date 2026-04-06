@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,8 +9,20 @@ using Reports.Utilities;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 using Microsoft.Extensions.Logging;
+using Reports.Data;
 using Reports.Services;
+using Reports.Services.Crm;
+using Reports.Services.Drivers;
+using Reports.Services.Email;
+using Reports.Services.Email.CustomerRequests;
+using Reports.Services.Email.OperationMail;
+using Reports.Services.Export;
+using Reports.Services.Files;
+using Reports.Services.Navigation;
+using Reports.Services.Templates;
 using Reports.Tabs;
+using Reports.Tabs.CreateDriver;
+using Wpf.Ui.Abstractions;
 
 namespace Reports;
 
@@ -51,23 +64,48 @@ public partial class App : Application
             .ConfigureServices((ctx, services) =>
             {
                 services.Configure<AppOptions>(ctx.Configuration.GetSection("App"));
-                services.AddSingleton<AppConfig>();
-                services.AddSingleton<CreateDriverForm>();
-                services.AddSingleton<Tabs.SignatureForm>();
-                services.AddSingleton<Tabs.CreateCustomerRequest>();
-                services.AddSingleton<Tabs.CreateOperationMail>();
-                services.AddSingleton<Tabs.AgreementForm>();
-                services.AddSingleton<Tabs.ReservationForm>();
-                services.AddSingleton<Tabs.ShortcutsPage>();
-                services.AddSingleton<Tabs.CreateIncidentForm>();
+                services.AddSingleton<INavigationViewPageProvider, DependencyInjectionPageProvider>();
+                services.AddSingleton<CreateDriverPage>();
+                services.AddSingleton<IDriverDraftService, DriverDraftService>();
+                services.AddSingleton<IDriverSubmissionService, DriverSubmissionService>();
+                services.AddSingleton<ICrmBrandResolver, CrmBrandResolver>();
+                services.AddSingleton<IDriverPaths, DriverPaths>();
+                services.AddSingleton<ITemplateCatalog, TemplateCatalog>();
+                services.AddSingleton<IWordPdfExporter, WordPdfExporter>();
+                services.AddSingleton<IFileDownloader, FileDownloaderService>();
+                services.AddSingleton<IShellService, ShellServiceAdapter>();
+                services.AddSingleton<IDriversExportService, DriversExportServiceAdapter>();
+                services.AddSingleton<IDocxTemplateGenerator, DocxTemplateGeneratorAdapter>();
+                services.AddSingleton<IAddressParser, AddressParser>();
+                services.AddSingleton<IEmailComposerService, EmailComposerService>();
+
+                services.AddTransient<IEmailDraftBuilder<CustomerRequestEmailModel>, CustomerRequestEmailDraftBuilder>();
+                services.AddTransient<IEmailDraftBuilder<OperationMailModel>, OperationMailDraftBuilder>();
+                services.AddSingleton<SignatureForm>();
+                services.AddSingleton<CreateCustomerRequest>();
+                services.AddSingleton<CreateOperationMail>();
+                services.AddSingleton<AgreementForm>();
+                services.AddSingleton<ReservationForm>();
+                services.AddSingleton<ShortcutsPage>();
+                services.AddSingleton<CreateIncidentForm>();
                 services.AddSingleton<ChromeTabsStore>();
                 services.AddHostedService<ChromeTabsListener>();
                 services.AddSingleton<MainWindow>();
+                
+                var dbPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "Reports",
+                    "reports.db");
+
+                services.AddSingleton(new AppDb(dbPath));
+                services.AddSingleton<PhonesRepository>();
             })
             .Build();
 
         _host.Start();
         Services = _host.Services;
+        var phonesRepository = _host.Services.GetRequiredService<PhonesRepository>();
+        phonesRepository.EnsureCreatedAsync().GetAwaiter().GetResult();
         
         var mainWindow = _host.Services.GetRequiredService<MainWindow>();
         mainWindow.Show();

@@ -3,22 +3,20 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Reports.Services;
+using Reports.Services.Templates;
 using Reports.Utilities;
 
 namespace Reports.Tabs
 {
     public partial class AgreementForm : Page
     {
-        private readonly AppConfig _config;
-        public AgreementForm() : this(App.Services.GetRequiredService<AppConfig>(), App.Services.GetRequiredService<ChromeTabsStore>())
-        {
-        }
+        private readonly ITemplateCatalog _templateCatalog;
 
-        public AgreementForm(AppConfig config, ChromeTabsStore requiredService)
+        public AgreementForm(ITemplateCatalog templateCatalog)
         {
             InitializeComponent();
-            _config = config;
-            DataContext = _config;
+            _templateCatalog = templateCatalog;
+            DataContext = this;
         }
         private async void Submit_Click(object sender, RoutedEventArgs e)
         {
@@ -49,7 +47,7 @@ namespace Reports.Tabs
                 var safeName = FileNameUtils.SanitizeFileName(nameValue ?? string.Empty);
 
                 var docxPath = Path.Combine(downloadsPath, $"Agreement - {safeName}.docx");
-                var resourceName = _config.AgreementTemplate(toggle);
+                var resourceName = _templateCatalog.AgreementTemplate(toggle);
                 await DocxTemplateGenerator.GenerateFromEmbeddedAsync(
                     embeddedResourceName: resourceName,
                     outputPath: docxPath,
