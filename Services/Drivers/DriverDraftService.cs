@@ -1,33 +1,31 @@
 ﻿using Reports.Services.Crm;
-using Reports.Utilities;
 
 namespace Reports.Services.Drivers;
 
-public sealed class DriverDraftService : IDriverDraftService
+public interface IDriverDraftService
 {
-    private readonly ICrmBrandResolver _brandResolver;
-
-    public DriverDraftService(ICrmBrandResolver brandResolver)
-    {
-        _brandResolver = brandResolver;
-    }
-
+    Task<CreateDriverDraft> LoadDraftAsync(CreateDriverRequest request, CancellationToken ct = default);
+}
+public sealed class DriverDraftService(
+    ICrmBrandResolver brandResolver,
+    ICrmCookieProvider cookieProvider)
+    : IDriverDraftService
+{
     public async Task<CreateDriverDraft> LoadDraftAsync(CreateDriverRequest request, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(request.Url))
             throw new InvalidOperationException("URL is required.");
 
-        if (string.IsNullOrWhiteSpace(request.CookiesRaw))
-            throw new InvalidOperationException("Cookies are required.");
-
-        var brand = _brandResolver.ServiceTypeFromUrl(request.Url);
+        var brand = brandResolver.ServiceTypeFromUrl(request.Url);
         if (string.IsNullOrWhiteSpace(brand))
             throw new InvalidOperationException("Could not determine service type from URL.");
 
-        var baseUri = _brandResolver.BaseUri(brand);
+        var cookies = cookieProvider.GetCookiesForUrl(request.Url);
+        
+        if (cookies.Count == 0)
+            throw new InvalidOperationException("No CRM cookies were found for this URL. Open the CRM tab in Chrome and try again.");
 
-        UserSettings.Save(request.CookiesRaw);
-        var cookies = CookieExtractor.ExtractCrmOwinCookies(UserSettings.LastCookie);
+        var baseUri = brandResolver.BaseUri(brand);
 
         using var crm = new CrmApi(CrmClientFactory.Create(baseUri, cookies));
 

@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Input;
 using Reports.Services;
+using Reports.Services.ChromeSync;
 using Reports.Services.Crm;
 using Reports.Services.Email;
 using Reports.Services.Email.OperationMail;
@@ -14,20 +15,23 @@ public partial class CreateOperationMail
     private readonly ICrmBrandResolver _brandResolver;
     private readonly IEmailDraftBuilder<OperationMailModel> _draftBuilder;
     private readonly IEmailComposerService _emailComposer;
+    private readonly ICrmCookieProvider _cookieProvider;
 
-    public ChromeTabsStore TabsStore { get; }
+    public ChromeSyncStore SyncStore { get; }
 
     public CreateOperationMail(
-        ChromeTabsStore tabsStore,
+        ChromeSyncStore syncStore,
         ICrmBrandResolver brandResolver,
         IEmailDraftBuilder<OperationMailModel> draftBuilder,
-        IEmailComposerService emailComposer)
+        IEmailComposerService emailComposer,
+        ICrmCookieProvider cookieProvider)
     {
         InitializeComponent();
-        TabsStore = tabsStore;
+        SyncStore = syncStore;
         _brandResolver = brandResolver;
         _draftBuilder = draftBuilder;
         _emailComposer = emailComposer;
+        _cookieProvider = cookieProvider;
         DataContext = this;
     }
 
@@ -48,9 +52,10 @@ public partial class CreateOperationMail
                 var brand = _brandResolver.ServiceTypeFromUrl(Url.Text);
                 var baseUri = _brandResolver.BaseUri(brand);
 
-                var cookiesRaw = Cookies.Text.Trim();
-                UserSettings.Save(cookiesRaw);
-                var cookies = CookieExtractor.ExtractCrmOwinCookies(UserSettings.LastCookie);
+                var cookies = _cookieProvider.GetCookiesForUrl(Url.Text.Trim());
+        
+                if (cookies.Count == 0)
+                    throw new InvalidOperationException("No CRM cookies were found for this URL. Open the CRM tab in Chrome and try again.");
 
                 using var crm = new CrmApi(CrmClientFactory.Create(baseUri, cookies));
                 var incidentId = crm.ExtractCrmId(Url.Text.Trim());

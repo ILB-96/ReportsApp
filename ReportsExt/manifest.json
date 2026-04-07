@@ -1,8 +1,11 @@
 ﻿{
   "manifest_version": 3,
   "name": "WPF Tabs Bridge",
-  "version": "1.0",
-  "permissions": ["tabs"],
-  "host_permissions": ["http://127.0.0.1:8765/*"],
+  "version": "1.1",
+  "permissions": ["tabs", "cookies"],
+  "host_permissions": [
+    "http://127.0.0.1:8765/*",
+    "https://*.crm4.dynamics.com/*"
+  ],
   "background": { "service_worker": "background.js" }
 }

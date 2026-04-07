@@ -29,7 +29,6 @@
 
                 <Grid.RowDefinitions>
                     <RowDefinition/>
-                    <RowDefinition/>
                 </Grid.RowDefinitions>
 
                 <Grid Grid.Row="0" Margin="0,5,0,0">
@@ -44,26 +43,8 @@
 
                     <controls:FuzzyUrlComboBox Grid.Column="1"
                                                x:Name="Url"
-                                                    ItemsSource="{Binding TabsStore.TabUrls}"
+                                                    ItemsSource="{Binding SyncStore.TabUrls}"
                                                     Text="{Binding SelectedUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                </Grid>
-
-                <!-- שורת עוגיות -->
-                <Grid Grid.Row="1" Margin="0,5,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" SharedSizeGroup="LabelColumn"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <TextBlock Text="עוגיות:"
-                               VerticalAlignment="Center"
-                               Margin="0,0,8,0"/>
-
-                    <ui:TextBox x:Name="Cookies"
-                                Grid.Column="1"
-                                HorizontalAlignment="Stretch"
-                                Text="{x:Static shared:UserSettings.LastCookie}"
-                                TextAlignment="Right"/>
                 </Grid>
 
             </Grid>

@@ -3,7 +3,12 @@ using Microsoft.Extensions.Options;
 using Reports.Configuration;
 
 namespace Reports.Services.Crm;
-
+public interface ICrmBrandResolver
+{
+    string ServiceTypeFromUrl(string url);
+    Uri BaseUri(string brand);
+    IReadOnlyList<string> ServiceTypes { get; }
+}
 public sealed class CrmBrandResolver : ICrmBrandResolver
 {
     private readonly AppOptions _options;

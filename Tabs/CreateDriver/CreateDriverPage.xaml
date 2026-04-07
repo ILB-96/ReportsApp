@@ -28,22 +28,15 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 
                 <!-- Regular Text Fields -->
                 <TextBlock Grid.Row="0" Grid.Column="0" Text="לינק קייס:" VerticalAlignment="Center" Margin="0,5,8,0"/>
                 <controls:FuzzyUrlComboBox Grid.Row="0" Grid.Column="1"
                                            x:Name="Url"
-                                           ItemsSource="{Binding TabsStore.TabUrls}"
+                                           ItemsSource="{Binding SyncStore.TabUrls}"
                                            Text="{Binding View.Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="עוגיות:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="1" Grid.Column="1"
-                          x:Name="Cookies"
-                          Margin="0,5,0,0"
-Text="{Binding View.Cookies, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"                          HorizontalAlignment="Stretch"
-                          FlowDirection="RightToLeft"/>
                 <!-- Submit Button -->
                 <ui:Button Content="יצא" Grid.Row="2" Grid.Column="1"
                         Margin="0,20,0,0"

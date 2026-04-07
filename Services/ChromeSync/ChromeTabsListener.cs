@@ -4,19 +4,14 @@ using System.Text;
 using System.Text.Json;
 using System.Windows;
 using Microsoft.Extensions.Hosting;
-using Reports.Services;
 
-namespace Reports.Services;
+namespace Reports.Services.ChromeSync;
 
-public sealed class ChromeTabsListener : BackgroundService
+public sealed class ChromeTabsListener(ChromeSyncStore store) : BackgroundService
 {
-    private readonly ChromeTabsStore _store;
     private HttpListener? _listener;
 
-    // put this in appsettings later
     private const string Token = "CHANGE_ME_TO_RANDOM";
-
-    public ChromeTabsListener(ChromeTabsStore store) => _store = store;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -40,14 +35,14 @@ public sealed class ChromeTabsListener : BackgroundService
             {
                 try
                 {
-                    if (ctx.Request.HttpMethod != "POST" || ctx.Request.Url?.AbsolutePath != "/tabs")
+                    if (ctx.Request.HttpMethod != "POST" || ctx.Request.Url?.AbsolutePath != "/chrome-sync")
                     {
                         ctx.Response.StatusCode = 404;
                         ctx.Response.Close();
                         return;
                     }
 
-                    if (ctx.Request.Headers["X-TabToken"] != Token)
+                    if (!string.Equals(ctx.Request.Headers["X-TabToken"], Token, StringComparison.Ordinal))
                     {
                         ctx.Response.StatusCode = 401;
                         ctx.Response.Close();
@@ -57,18 +52,33 @@ public sealed class ChromeTabsListener : BackgroundService
                     using var reader = new StreamReader(ctx.Request.InputStream, Encoding.UTF8);
                     var body = await reader.ReadToEndAsync(stoppingToken);
 
-                    var payload = JsonSerializer.Deserialize<TabsPayload>(body);
-                    var urls = payload?.urls ?? new List<string>();
+                    var payload = JsonSerializer.Deserialize<ChromeSyncPayload>(body, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
 
-                    // IMPORTANT: update ObservableCollection on UI thread
-                    Application.Current.Dispatcher.Invoke(() => _store.ReplaceAll(urls));
+                    var urls = payload?.Urls ?? new List<string>();
+                    var cookiesByOrigin = payload?.CookiesByOrigin
+                                          ?? new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        store.ReplaceAll(urls, cookiesByOrigin);
+                    });
 
                     ctx.Response.StatusCode = 200;
                     ctx.Response.Close();
                 }
                 catch
                 {
-                    try { ctx.Response.StatusCode = 500; ctx.Response.Close(); } catch { /* ignore */ }
+                    try
+                    {
+                        ctx.Response.StatusCode = 500;
+                        ctx.Response.Close();
+                    }
+                    catch
+                    {
+                    }
                 }
             }, stoppingToken);
         }
@@ -81,13 +91,17 @@ public sealed class ChromeTabsListener : BackgroundService
             _listener?.Stop();
             _listener?.Close();
         }
-        catch { /* ignore */ }
+        catch
+        {
+        }
 
         return base.StopAsync(cancellationToken);
     }
+}
 
-    private sealed class TabsPayload
-    {
-        public List<string>? urls { get; set; }
-    }
+public sealed class ChromeSyncPayload
+{
+    public string? UpdatedAt { get; init; }
+    public List<string>? Urls { get; init; }
+    public Dictionary<string, Dictionary<string, string>>? CookiesByOrigin { get; init; }
 }

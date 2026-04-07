@@ -9,7 +9,6 @@ namespace Reports.Tabs.CreateDriver;
 public sealed partial class CreateDriverView : INotifyPropertyChanged
 {
     private string _url = string.Empty;
-    private string _cookies = string.Empty;
     private string _serviceType = string.Empty;
     private string _reportStartDate = string.Empty;
     private string _reportEndDate = string.Empty;
@@ -33,7 +32,6 @@ public sealed partial class CreateDriverView : INotifyPropertyChanged
     private Visibility _dataPanelVisibility = Visibility.Collapsed;
 
     public string Url { get => _url; set => SetField(ref _url, value); }
-    public string Cookies { get => _cookies; set => SetField(ref _cookies, value); }
     public string ServiceType { get => _serviceType; set => SetField(ref _serviceType, value); }
     public string ReportStartDate { get => _reportStartDate; set => SetField(ref _reportStartDate, value); }
     public string ReportEndDate { get => _reportEndDate; set => SetField(ref _reportEndDate, value); }
@@ -114,8 +112,7 @@ public sealed partial class CreateDriverView : INotifyPropertyChanged
     {
         return new CreateDriverRequest
         {
-            Url = Url.Trim(),
-            CookiesRaw = Cookies.Trim()
+            Url = Url.Trim()
         };
     }
 

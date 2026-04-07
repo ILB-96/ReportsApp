@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Reports.Utilities
 {
@@ -8,7 +6,7 @@ namespace Reports.Utilities
 
 public static class CookieExtractor
 {
-    // Returns a dictionary with keys: CrmOwinAuth, CrmOwinAuthC1..C5 (if present)
+    // Returns a dictionary with keys: CrmOwinAuth, CrmOwinAuthC1...C5 (if present)
     public static Dictionary<string, string> ExtractCrmOwinCookies(string rawCookieHeader)
     {
         if (string.IsNullOrWhiteSpace(rawCookieHeader))

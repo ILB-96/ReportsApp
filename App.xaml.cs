@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +10,7 @@ using Wpf.Ui.Controls;
 using Microsoft.Extensions.Logging;
 using Reports.Data;
 using Reports.Services;
+using Reports.Services.ChromeSync;
 using Reports.Services.Crm;
 using Reports.Services.Drivers;
 using Reports.Services.Email;
@@ -36,7 +36,6 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        UserSettings.Load();
         
         ApplicationThemeManager.Apply(
             ApplicationTheme.Light,   // or Dark
@@ -88,8 +87,9 @@ public partial class App : Application
                 services.AddSingleton<ReservationForm>();
                 services.AddSingleton<ShortcutsPage>();
                 services.AddSingleton<CreateIncidentForm>();
-                services.AddSingleton<ChromeTabsStore>();
+                services.AddSingleton<ChromeSyncStore>();
                 services.AddHostedService<ChromeTabsListener>();
+                services.AddSingleton<ICrmCookieProvider, CrmCookieProvider>();
                 services.AddSingleton<MainWindow>();
                 
                 var dbPath = Path.Combine(

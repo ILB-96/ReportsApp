@@ -8,7 +8,7 @@ namespace Reports.Services.Crm;
 
 public static class CrmClientFactory
 {
-    public static HttpClient Create(Uri baseUri, IDictionary<string, string> cookies)
+    public static HttpClient Create(Uri baseUri, IReadOnlyDictionary<string, string> cookies)
     {
         var handler = new HttpClientHandler
         {

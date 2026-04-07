@@ -4,14 +4,19 @@ using Reports.Configuration;
 
 namespace Reports.Services.Drivers;
 
-public sealed class DriverPaths : IDriverPaths
+public interface IDriverPaths
 {
-    private readonly AppOptions _options;
+    string StartFolder { get; }
+    string DriversFolder { get; }
+    string DriversFolderPath { get; }
 
-    public DriverPaths(IOptions<AppOptions> options)
-    {
-        _options = options.Value;
-    }
+    string DriversFile(string brand);
+    int DriverCol(string key);
+    int DriversLastColToClear { get; }
+}
+public sealed class DriverPaths(IOptions<AppOptions> options) : IDriverPaths
+{
+    private readonly AppOptions _options = options.Value;
 
     public string StartFolder => _options.StartFolder;
     public string DriversFolder => _options.DriversFolder;

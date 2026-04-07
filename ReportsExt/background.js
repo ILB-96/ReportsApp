@@ -1,36 +1,95 @@
-﻿const ENDPOINT = "http://127.0.0.1:8765/tabs";
-const TOKEN = "CHANGE_ME_TO_RANDOM"; // must match WPF
+﻿const ENDPOINT = "http://127.0.0.1:8765/chrome-sync";
+const TOKEN = "CHANGE_ME_TO_RANDOM";
 
-async function pushTabs() {
+const WANTED_COOKIE_NAMES = [
+    "CrmOwinAuth",
+    "CrmOwinAuthC1",
+    "CrmOwinAuthC2",
+    "CrmOwinAuthC3",
+    "CrmOwinAuthC4",
+    "CrmOwinAuthC5"
+];
+
+function isCrmUrl(url) {
+    return typeof url === "string" &&
+        (url.startsWith("http://") || url.startsWith("https://")) &&
+        url.includes(".crm4.dynamics.com");
+}
+
+async function getCrmOriginsFromTabs() {
     const tabs = await chrome.tabs.query({});
-
     const urls = [];
-    const seen = new Set();
+    const seenUrls = new Set();
+    const origins = new Set();
 
     for (const t of tabs) {
-        const u = t.url || "";
-        if (!u.startsWith("http://") && !u.startsWith("https://")) continue;
-        if (seen.has(u)) continue;
-        seen.add(u);
-        urls.push(u);
+        const url = t.url || "";
+        if (!isCrmUrl(url)) continue;
+
+        if (!seenUrls.has(url)) {
+            seenUrls.add(url);
+            urls.push(url);
+        }
+
+        try {
+            origins.add(new URL(url).origin);
+        } catch {
+            // ignore malformed
+        }
     }
 
-    fetch(ENDPOINT, {
+    return { urls, origins: [...origins] };
+}
+
+async function getCookiesByOrigin(origins) {
+    const cookiesByOrigin = {};
+
+    for (const origin of origins) {
+        const allCookies = await chrome.cookies.getAll({ url: origin });
+        const picked = {};
+
+        for (const c of allCookies) {
+            if (WANTED_COOKIE_NAMES.includes(c.name) && c.value) {
+                picked[c.name] = c.value;
+            }
+        }
+
+        if (Object.keys(picked).length > 0) {
+            cookiesByOrigin[origin] = picked;
+        }
+    }
+
+    return cookiesByOrigin;
+}
+
+async function pushChromeState() {
+    const { urls, origins } = await getCrmOriginsFromTabs();
+    const cookiesByOrigin = await getCookiesByOrigin(origins);
+
+    await fetch(ENDPOINT, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "X-TabToken": TOKEN
         },
-        body: JSON.stringify({ updated_at: new Date().toISOString(), urls })
+        body: JSON.stringify({
+            updatedAt: new Date().toISOString(),
+            urls,
+            cookiesByOrigin
+        })
     }).catch(() => {});
 }
 
-// update on tab/window events
-chrome.tabs.onCreated.addListener(pushTabs);
-chrome.tabs.onRemoved.addListener(pushTabs);
-chrome.tabs.onUpdated.addListener((_id, info) => { if (info.url || info.status === "complete") pushTabs(); });
-chrome.tabs.onActivated.addListener(pushTabs);
-chrome.windows.onFocusChanged.addListener(pushTabs);
+chrome.tabs.onCreated.addListener(pushChromeState);
+chrome.tabs.onRemoved.addListener(pushChromeState);
+chrome.tabs.onUpdated.addListener((_id, info) => {
+    if (info.url || info.status === "complete") pushChromeState();
+});
+chrome.tabs.onActivated.addListener(pushChromeState);
+chrome.windows.onFocusChanged.addListener(pushChromeState);
 
-// also refresh periodically (MV3 service worker can sleep; this helps)
-setInterval(pushTabs, 15000);
+chrome.cookies.onChanged.addListener(() => {
+    pushChromeState();
+});
+
+setInterval(pushChromeState, 15000);

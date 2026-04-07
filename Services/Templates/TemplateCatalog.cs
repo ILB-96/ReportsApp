@@ -3,14 +3,9 @@ using Reports.Configuration;
 
 namespace Reports.Services.Templates;
 
-public sealed class TemplateCatalog : ITemplateCatalog
+public sealed class TemplateCatalog(IOptions<AppOptions> options) : ITemplateCatalog
 {
-    private readonly AppOptions _options;
-
-    public TemplateCatalog(IOptions<AppOptions> options)
-    {
-        _options = options.Value;
-    }
+    private readonly AppOptions _options = options.Value;
 
     public string AgreementTemplate(string brand)
         => _options.AgreementPath.Replace("{brand}", brand);

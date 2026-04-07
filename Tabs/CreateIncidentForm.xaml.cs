@@ -2,6 +2,7 @@
 using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Reports.Services;
+using Reports.Services.ChromeSync;
 using Reports.Services.Crm;
 using Reports.Utilities;
 
@@ -10,16 +11,19 @@ namespace Reports.Tabs;
 public partial class CreateIncidentForm : Page
 {
     private readonly ICrmBrandResolver _brandResolver;
+    private readonly ICrmCookieProvider _cookieProvider;
     
-    public ChromeTabsStore TabsStore { get; }
+    public ChromeSyncStore SyncStore { get; }
 
     public CreateIncidentForm(
-        ChromeTabsStore tabsStore,
-        ICrmBrandResolver brandResolver)
+        ChromeSyncStore syncStore,
+        ICrmBrandResolver brandResolver,
+        ICrmCookieProvider cookieProvider)
     {
         InitializeComponent();
-        TabsStore = tabsStore;
+        SyncStore = syncStore;
         _brandResolver = brandResolver;
+        _cookieProvider = cookieProvider;
         DataContext = this;
     }
 
@@ -32,9 +36,10 @@ public partial class CreateIncidentForm : Page
                 var brand = _brandResolver.ServiceTypeFromUrl(Url.Text);
                 var baseUri = _brandResolver.BaseUri(brand);
 
-                var cookiesRaw = Cookies.Text.Trim();
-                UserSettings.Save(cookiesRaw);
-                var cookies = CookieExtractor.ExtractCrmOwinCookies(UserSettings.LastCookie);
+                var cookies = _cookieProvider.GetCookiesForUrl(Url.Text.Trim());
+        
+                if (cookies.Count == 0)
+                    throw new InvalidOperationException("No CRM cookies were found for this URL. Open the CRM tab in Chrome and try again.");
 
                 using var crm = new CrmApi(CrmClientFactory.Create(baseUri, cookies));
                 var accountId = crm.ExtractCrmId(Url.Text.Trim());

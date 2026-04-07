@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Reports.Data;
 using Reports.Services;
+using Reports.Services.ChromeSync;
 using Reports.Services.Crm;
 using Reports.Services.Drivers;
 using Reports.Services.Export;
@@ -23,12 +24,12 @@ public partial class CreateDriverPage : Page
     private readonly IDriverPaths _driverPaths;
     private readonly PhonesRepository _phonesRepository;
     
-    public ChromeTabsStore TabsStore { get; }
+    public ChromeSyncStore SyncStore { get; }
     public IReadOnlyList<string> ServiceTypes { get; }
 
     public CreateDriverView View { get; }
     public CreateDriverPage(
-        ChromeTabsStore tabsStore,
+        ChromeSyncStore syncStore,
         ICrmBrandResolver brandResolver,
         IDriverPaths driverPaths,
         IDriverDraftService driverDraftService,
@@ -46,11 +47,8 @@ public partial class CreateDriverPage : Page
         _phonesRepository = phonesRepository;
 
         ServiceTypes = _brandResolver.ServiceTypes;
-        TabsStore = tabsStore;
-        View = new CreateDriverView
-        {
-            Cookies = UserSettings.LastCookie
-        };
+        SyncStore = syncStore;
+        View = new CreateDriverView();
         
         DataContext = this;
     }

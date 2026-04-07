@@ -6,55 +6,41 @@ using Reports.Utilities;
 
 namespace Reports.Services.Drivers;
 
-public sealed class DriverSubmissionService : IDriverSubmissionService
+public interface IDriverSubmissionService
 {
-    private readonly IDriverPaths _driverPaths;
-    private readonly ITemplateCatalog _templateCatalog;
-    private readonly IWordPdfExporter _pdfExporter;
-    private readonly IFileDownloader _fileDownloader;
-    private readonly IShellService _shellService;
-    private readonly IDriversExportService _driversExportService;
-    private readonly IDocxTemplateGenerator _docxTemplateGenerator;
-
-    public DriverSubmissionService(
-        IDriverPaths driverPaths,
-        ITemplateCatalog templateCatalog,
-        IWordPdfExporter pdfExporter,
-        IFileDownloader fileDownloader,
-        IShellService shellService,
-        IDriversExportService driversExportService,
-        IDocxTemplateGenerator docxTemplateGenerator)
-    {
-        _driverPaths = driverPaths;
-        _templateCatalog = templateCatalog;
-        _pdfExporter = pdfExporter;
-        _fileDownloader = fileDownloader;
-        _shellService = shellService;
-        _driversExportService = driversExportService;
-        _docxTemplateGenerator = docxTemplateGenerator;
-    }
-
+    Task<DriverSubmissionResult> SubmitAsync(DriverSubmission submission, CancellationToken ct = default);
+}
+public sealed class DriverSubmissionService(
+    IDriverPaths driverPaths,
+    ITemplateCatalog templateCatalog,
+    IWordPdfExporter pdfExporter,
+    IFileDownloader fileDownloader,
+    IShellService shellService,
+    IDriversExportService driversExportService,
+    IDocxTemplateGenerator docxTemplateGenerator)
+    : IDriverSubmissionService
+{
     public async Task<DriverSubmissionResult> SubmitAsync(DriverSubmission submission, CancellationToken ct = default)
     {
         ValidateSubmission(submission);
 
-        Directory.CreateDirectory(_driverPaths.DriversFolderPath);
+        Directory.CreateDirectory(driverPaths.DriversFolderPath);
 
         var accountFolder = Path.Combine(
-            _driverPaths.DriversFolderPath,
+            driverPaths.DriversFolderPath,
             $"{NormalizePlate(submission.CarLicense)} - {submission.AccountFullName}");
 
         Directory.CreateDirectory(accountFolder);
 
-        await _fileDownloader.DownloadIfExistsAsync(submission.LicenseLink.Trim(), accountFolder, "license", ct);
-        await _fileDownloader.DownloadIfExistsAsync(submission.PassportLink.Trim(), accountFolder, "passport", ct);
+        await fileDownloader.DownloadIfExistsAsync(submission.LicenseLink.Trim(), accountFolder, "license", ct);
+        await fileDownloader.DownloadIfExistsAsync(submission.PassportLink.Trim(), accountFolder, "passport", ct);
 
-        _shellService.OpenDirectory(accountFolder);
+        shellService.OpenDirectory(accountFolder);
 
-        var excelPath = Path.Combine(_driverPaths.DriversFolderPath, _driverPaths.DriversFile(submission.ServiceType));
+        var excelPath = Path.Combine(driverPaths.DriversFolderPath, driverPaths.DriversFile(submission.ServiceType));
         var row = BuildExcelRow(submission);
 
-        _driversExportService.AppendRow(excelPath, row);
+        driversExportService.AppendRow(excelPath, row);
         
         var shouldGenerateAgreement =
             !string.IsNullOrWhiteSpace(submission.ReservationNumber) ||
@@ -66,7 +52,7 @@ public sealed class DriverSubmissionService : IDriverSubmissionService
         return new DriverSubmissionResult
         {
             ExcelPath = excelPath,
-            DriversFileName = _driverPaths.DriversFile(submission.ServiceType),
+            DriversFileName = driverPaths.DriversFile(submission.ServiceType),
             AccountFolder = accountFolder,
             AgreementGenerated = shouldGenerateAgreement
         };
@@ -127,12 +113,12 @@ public sealed class DriverSubmissionService : IDriverSubmissionService
 
         var safeName = FileNameUtils.SanitizeFileName(submission.AccountFullName);
         var docxPath = Path.Combine(accountFolder, $"Agreement - {safeName}.docx");
-        var resourceName = _templateCatalog.AgreementTemplate(submission.Brand);
+        var resourceName = templateCatalog.AgreementTemplate(submission.Brand);
 
-        await _docxTemplateGenerator.GenerateFromEmbeddedAsync(resourceName, docxPath, fields, ct);
+        await docxTemplateGenerator.GenerateFromEmbeddedAsync(resourceName, docxPath, fields, ct);
         
         var pdfPath = Path.ChangeExtension(docxPath, ".pdf");
-        await _pdfExporter.ExportAsync(docxPath, pdfPath, deleteDocx: true, ct);
+        await pdfExporter.ExportAsync(docxPath, pdfPath, deleteDocx: true, ct);
     }
 
     private static string NormalizePlate(string plate)

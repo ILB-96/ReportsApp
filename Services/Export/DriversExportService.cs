@@ -3,7 +3,11 @@ using ClosedXML.Excel;
 using Reports.Services.Drivers;
 
 namespace Reports.Services.Export;
-
+public interface IDriversExportService
+{
+    void ClearRows(string excelPath, int lastCol = 12);
+    void AppendRow(string excelPath, Dictionary<string, DriverRowValue> row, int sheetIndex = 1);
+}
 public static class DriversExportService
 {
     public static void ClearRows(string excelPath, int lastCol = 12)
