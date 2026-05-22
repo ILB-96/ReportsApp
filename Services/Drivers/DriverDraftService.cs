@@ -62,7 +62,11 @@ public sealed class DriverDraftService(
             PostalCode = data.PostalCode,
             CreatedOn = data.CreatedOn,
             LicenseLink = data.LicenseLink,
-            PassportLink = data.PassportLink
+            PassportLink = data.PassportLink,
+            ContractLink = data.ContractLink,
+            CustomerLink = data.CustomerLink,
+            PickupLink = data.PickupLink,
+            ReturnLink = data.ReturnLink
         };
     }
 

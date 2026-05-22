@@ -105,6 +105,8 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <!-- Row 0: Start/End date -->
@@ -156,24 +158,36 @@
                 <TextBlock Grid.Row="6" Grid.Column="3" Text="מיקוד:" VerticalAlignment="Center" Margin="0,5,8,0"/>
                 <ui:TextBox Grid.Row="6" Grid.Column="4" Text="{Binding View.PostalCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
                 
-                <TextBlock Grid.Row="7" Grid.Column="3" Text="קישור לדרכון:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="7" Grid.Column="4" Text="{Binding View.PassportLink, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
-
                 <TextBlock Grid.Row="7" Grid.Column="0" Text="קישור לרישיון:" VerticalAlignment="Center" Margin="0,5,8,0"/>
                 <ui:TextBox Grid.Row="7" Grid.Column="1" Text="{Binding View.LicenseLink, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
 
+                <TextBlock Grid.Row="7" Grid.Column="3" Text="קישור לדרכון:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="7" Grid.Column="4" Text="{Binding View.PassportLink, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
 
-                <TextBlock Grid.Row="8" Grid.Column="0" Text="תאריך יצירה:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <ui:TextBox Grid.Row="8" Grid.Column="1" Text="{Binding View.CreatedOn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                <TextBlock Grid.Row="8" Grid.Column="0" Text="קישור חוזה:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="8" Grid.Column="1" Text="{Binding View.ContractLink, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
                 
-                <TextBlock Grid.Row="8" Grid.Column="3" Text="סוג שירות:" VerticalAlignment="Center" Margin="0,5,8,0"/>
-                <controls:FuzzyUrlComboBox Grid.Row="8" Grid.Column="4"
+                <TextBlock Grid.Row="8" Grid.Column="3" Text="קישור לקוח:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="8" Grid.Column="4" Text="{Binding View.CustomerLink, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+            
+                <TextBlock Grid.Row="9" Grid.Column="0" Text="קישור מסירה:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="9" Grid.Column="1" Text="{Binding View.PickupLink, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <TextBlock Grid.Row="9" Grid.Column="3" Text="קישור החזרה:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="9" Grid.Column="4" Text="{Binding View.ReturnLink, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+
+                <TextBlock Grid.Row="10" Grid.Column="0" Text="תאריך יצירה:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="10" Grid.Column="1" Text="{Binding View.CreatedOn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                
+                <TextBlock Grid.Row="10" Grid.Column="3" Text="סוג שירות:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <controls:FuzzyUrlComboBox Grid.Row="10" Grid.Column="4"
                                            ItemsSource="{Binding ServiceTypes}"
                                            Text="{Binding View.ServiceType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 <!-- <ui:TextBox Grid.Row="8" Grid.Column="4" x:Name="ServiceTypeBox" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/> -->
                 <!-- Row 9: Button -->
                 
-                <ui:Button Grid.Row="9" Grid.Column="2" Grid.ColumnSpan="3"
+                <ui:Button Grid.Row="11" Grid.Column="2" Grid.ColumnSpan="3"
                            Content="שלח נתונים"
                            Margin="4,20,0,0"
                            HorizontalAlignment="Stretch"
@@ -181,7 +195,7 @@
                            FontWeight="Bold"
                            MaxWidth="250"
                            Click="SendFinal_Click"/>
-                <ui:Button Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"
+                <ui:Button Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="2"
                            Content="חזור"
                            Margin="4,20,0,0"
                            HorizontalAlignment="Stretch"

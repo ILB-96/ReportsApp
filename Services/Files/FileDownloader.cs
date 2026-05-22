@@ -69,4 +69,64 @@ public static class FileDownloader
 
         return null;
     }
+    public static async Task MoveIfExistsAsync(
+        string? sourceFilePath,
+        string destinationFolderPath,
+        CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(sourceFilePath))
+        {
+            Console.WriteLine("MoveIfExistsAsync skipped: source path is empty.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(destinationFolderPath))
+            throw new ArgumentException("Destination folder path cannot be null or empty.", nameof(destinationFolderPath));
+
+        if (!File.Exists(sourceFilePath))
+        {
+            Console.WriteLine($"MoveIfExistsAsync skipped: file does not exist: {sourceFilePath}");
+            return;
+        }
+
+        Directory.CreateDirectory(destinationFolderPath);
+
+        var fileName = Path.GetFileName(sourceFilePath);
+        var destinationPath = Path.Combine(destinationFolderPath, fileName);
+        destinationPath = GetUniqueFilePath(destinationPath);
+
+        Console.WriteLine($"Moving file from '{sourceFilePath}' to '{destinationPath}'");
+
+        await Task.Run(() =>
+        {
+            ct.ThrowIfCancellationRequested();
+            File.Move(sourceFilePath, destinationPath);
+        }, ct);
+    }
+
+    private static string GetUniqueFilePath(string destinationPath)
+    {
+        if (!File.Exists(destinationPath))
+            return destinationPath;
+
+        var directory = Path.GetDirectoryName(destinationPath)
+                        ?? throw new InvalidOperationException("Destination path has no directory.");
+
+        var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(destinationPath);
+        var extension = Path.GetExtension(destinationPath);
+
+        var counter = 1;
+        string candidatePath;
+
+        do
+        {
+            candidatePath = Path.Combine(
+                directory,
+                $"{fileNameWithoutExtension} ({counter}){extension}");
+            counter++;
+        }
+        while (File.Exists(candidatePath));
+
+        return candidatePath;
+    }
 }

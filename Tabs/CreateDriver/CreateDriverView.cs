@@ -27,6 +27,10 @@ public sealed partial class CreateDriverView : INotifyPropertyChanged
     private string _createdOn = string.Empty;
     private string _licenseLink = string.Empty;
     private string _passportLink = string.Empty;
+    private string _contractLink = string.Empty;
+    private string _customerLink = string.Empty;
+    private string _pickupLink = string.Empty;
+    private string _returnLink = string.Empty;
 
     private Visibility _inputPanelVisibility = Visibility.Visible;
     private Visibility _dataPanelVisibility = Visibility.Collapsed;
@@ -50,6 +54,10 @@ public sealed partial class CreateDriverView : INotifyPropertyChanged
     public string CreatedOn { get => _createdOn; set => SetField(ref _createdOn, value); }
     public string LicenseLink { get => _licenseLink; set => SetField(ref _licenseLink, value); }
     public string PassportLink { get => _passportLink; set => SetField(ref _passportLink, value); }
+    public string ContractLink { get => _contractLink; set => SetField(ref _contractLink, value); }
+    public string CustomerLink { get => _customerLink; set => SetField(ref _customerLink, value); }
+    public string PickupLink { get => _pickupLink; set => SetField(ref _pickupLink, value); }
+    public string ReturnLink { get => _returnLink; set => SetField(ref _returnLink, value); }
 
     public Visibility InputPanelVisibility
     {
@@ -97,6 +105,10 @@ public sealed partial class CreateDriverView : INotifyPropertyChanged
         CreatedOn = draft.CreatedOn;
         LicenseLink = draft.LicenseLink;
         PassportLink = draft.PassportLink;
+        ContractLink = draft.ContractLink;
+        CustomerLink = draft.CustomerLink;
+        PickupLink = draft.PickupLink;
+        ReturnLink = draft.ReturnLink;
     }
 
     private void SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
@@ -137,7 +149,11 @@ public sealed partial class CreateDriverView : INotifyPropertyChanged
             ReservationNumber = ReservationNumber,
             CreatedOn = CreatedOn,
             LicenseLink = LicenseLink,
-            PassportLink = PassportLink
+            PassportLink = PassportLink,
+            ContractLink = ContractLink,
+            CustomerLink = CustomerLink,
+            PickupLink = PickupLink,
+            ReturnLink = ReturnLink
         };
     }
 }

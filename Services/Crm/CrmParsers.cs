@@ -22,6 +22,10 @@ public sealed record DriverData(
     string CreatedOn,
     string LicenseLink,
     string PassportLink,
+    string ContractLink,
+    string CustomerLink,
+    string  PickupLink,
+    string ReturnLink,
     string ReportCity,
     string ReportAddress,
     string ReportPrice,
@@ -75,6 +79,10 @@ public static class CrmParsers
             CreatedOn: "",
             LicenseLink: "",
             PassportLink: "",
+            ContractLink: "",
+            CustomerLink: "",
+            PickupLink: "",
+            ReturnLink: "",
             ReportCity: reportCity,
             ReportAddress: reportAddress,
             ReportPrice: reportPrice,
@@ -103,6 +111,16 @@ public static class CrmParsers
         var licenseLink = account.GetString("c2g_driverlicensefront") ?? string.Empty;
         var passportLink = account.GetString("gtg_passportlink") ?? string.Empty;
 
+        var contractLink = string.IsNullOrWhiteSpace(baseData.ReservationNumber) ? FileFinder.GetFullPath(["contract"]) :  FileFinder.GetFullPath(["screenshot"]);
+        var customerLink = FileFinder.GetFullPath(["customer", "driver", "licence", "רישיון"]);
+        var pickupLink = FileFinder.GetFullPath([$"{baseData.CarLicense} מסירה", $"{baseData.CarLicense} pickup"]);
+        var returnLink = FileFinder.GetFullPath(
+    [
+            $"{baseData.CarLicense} איסוף",
+            $"{baseData.CarLicense} return",
+            $"{baseData.CarLicense} delivery",
+            $"{baseData.CarLicense} החזרה"
+            ]);
         return baseData with
         {
             AccountFullName = fullName,
@@ -116,7 +134,12 @@ public static class CrmParsers
             PostalCode = postalCode,
             CreatedOn = createdOn,
             LicenseLink = licenseLink,
-            PassportLink = passportLink
+            PassportLink = passportLink,
+            ContractLink = contractLink,
+            CustomerLink = customerLink,
+            PickupLink = pickupLink,
+            ReturnLink = returnLink
         };
     }
+    
 }

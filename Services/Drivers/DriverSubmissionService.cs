@@ -34,6 +34,10 @@ public sealed class DriverSubmissionService(
 
         await fileDownloader.DownloadIfExistsAsync(submission.LicenseLink.Trim(), accountFolder, "license", ct);
         await fileDownloader.DownloadIfExistsAsync(submission.PassportLink.Trim(), accountFolder, "passport", ct);
+        await fileDownloader.MoveIfExistsAsync(submission.ContractLink, accountFolder, ct);
+        await fileDownloader.MoveIfExistsAsync(submission.CustomerLink, accountFolder, ct);
+        await fileDownloader.MoveIfExistsAsync(submission.PickupLink, accountFolder, ct);
+        await fileDownloader.MoveIfExistsAsync(submission.ReturnLink, accountFolder, ct);
 
         shellService.OpenDirectory(accountFolder);
 

@@ -22,4 +22,9 @@ public sealed class DriverSubmission
     public required string CreatedOn { get; init; }
     public required string LicenseLink { get; init; }
     public required string PassportLink { get; init; }
+    
+    public required string ContractLink { get; init; }
+    public required string CustomerLink { get; init; }
+    public required string PickupLink { get; init; }
+    public required string ReturnLink { get; init; }
 }
