@@ -38,40 +38,16 @@
                                            Text="{Binding View.Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 
                 <!-- Submit Button -->
-                <ui:Button Content="יצא" Grid.Row="2" Grid.Column="1"
+                <ui:Button Content="יצא" Grid.Row="1" Grid.Column="1"
                         Margin="0,20,0,0"
                         HorizontalAlignment="Stretch"
                         IsDefault="True"
                         Click="Submit_Click"
                         MaxWidth="150"
                         Appearance="Primary"
+                        Cursor="Hand"
                         FontWeight="Bold"/>
-                <ui:Button x:Name="ClearExcelButton"
-                           Grid.Row="2" Grid.Column="0"
-                           Content="נקה שורות מאקסל"
-                           Margin="0,20,0,0"
-                           
-                           HorizontalAlignment="Stretch"
-                           Appearance="Info"
-                           MaxWidth="150"
-                           Background="#B91C1C"
-                           MouseOverBackground="#DC2626"
-                           PressedBackground="#991B1B"
-                           Click="ClearExcelMenu_Click">
-
-                    <ui:Button.ContextMenu>
-                        <ContextMenu FlowDirection="RightToLeft"
-                                     ItemsSource="{Binding ServiceTypes}">
-                            <ContextMenu.ItemContainerStyle>
-                                <Style TargetType="MenuItem">
-                                    <Setter Property="Header" Value="{Binding}" />
-                                    <Setter Property="Tag" Value="{Binding}" />
-                                    <EventSetter Event="Click" Handler="ClearExcel_Click" />
-                                </Style>
-                            </ContextMenu.ItemContainerStyle>
-                        </ContextMenu>
-                    </ui:Button.ContextMenu>
-                </ui:Button>
+                
             </Grid>
         </ui:Card>
         <ui:Card Grid.Row="1"
@@ -194,12 +170,14 @@
                            Appearance="Primary"
                            FontWeight="Bold"
                            MaxWidth="250"
+                           Cursor="Hand"
                            Click="SendFinal_Click"/>
                 <ui:Button Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="2"
                            Content="חזור"
                            Margin="4,20,0,0"
                            HorizontalAlignment="Stretch"
                            Appearance="Secondary"
+                           Cursor="Hand"
                            Click="PreviousPage_Click"/>
             </Grid>
         </ui:Card>

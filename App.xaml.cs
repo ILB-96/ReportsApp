@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Windows;
+﻿using System.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -8,8 +7,7 @@ using Reports.Utilities;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 using Microsoft.Extensions.Logging;
-using Reports.Data;
-using Reports.Services;
+using Reports.Services.BetterwayApi;
 using Reports.Services.ChromeSync;
 using Reports.Services.Crm;
 using Reports.Services.Drivers;
@@ -92,20 +90,28 @@ public partial class App : Application
                 services.AddSingleton<ICrmCookieProvider, CrmCookieProvider>();
                 services.AddSingleton<MainWindow>();
                 
-                var dbPath = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "Reports",
-                    "reports.db");
+                services.AddHttpClient<IBetterwayTokenProvider, BetterwayTokenProvider>(c =>
+                {
+                    c.BaseAddress = new Uri("https://api.betterway.co.il/");
+                });
 
-                services.AddSingleton(new AppDb(dbPath));
-                services.AddSingleton<PhonesRepository>();
+                services.AddHttpClient<IBetterwayDriverApi, BetterwayNewDriver>(c =>
+                {
+                    c.BaseAddress = new Uri("https://api.betterway.co.il/");
+                    c.DefaultRequestHeaders.Add("Origin", "https://app.betterway.co.il");
+                    c.DefaultRequestHeaders.Add("Referer", "https://app.betterway.co.il/");
+                });
+                services.AddHttpClient<IBetterwayDriverSearch, BetterwayDriverSearch>(c =>
+                {
+                    c.BaseAddress = new Uri("https://api.betterway.co.il/");
+                    c.DefaultRequestHeaders.Add("Origin", "https://app.betterway.co.il");
+                    c.DefaultRequestHeaders.Add("Referer", "https://app.betterway.co.il/");
+                });
             })
             .Build();
 
         _host.Start();
         Services = _host.Services;
-        var phonesRepository = _host.Services.GetRequiredService<PhonesRepository>();
-        phonesRepository.EnsureCreatedAsync().GetAwaiter().GetResult();
         
         var mainWindow = _host.Services.GetRequiredService<MainWindow>();
         mainWindow.Show();

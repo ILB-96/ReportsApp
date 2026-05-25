@@ -84,6 +84,18 @@ public sealed partial class CreateDriverView : INotifyPropertyChanged
         InputPanelVisibility = Visibility.Collapsed;
         DataPanelVisibility = Visibility.Visible;
     }
+    public void FillFromDriver(BetterwayDriver driver)
+    {
+        AccountFullName = driver.Name;
+        DriverId = driver.IdNumber ?? DriverId;
+        DriverLicense = driver.LicenseNumber ?? DriverLicense;
+        Email = driver.Email ?? Email;
+        Phone = driver.PhoneNumber ?? Phone;
+        Address = driver.Street ?? Address;
+        House = driver.HouseNumber ?? House;
+        City = driver.City ?? City;
+        PostalCode = driver.ZipCode ?? PostalCode;
+    }
 
     public void FillFromDraft(CreateDriverDraft draft)
     {

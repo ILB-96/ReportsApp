@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using Reports.Data;
-using Reports.Services;
+using Reports.Services.BetterwayApi;
 using Reports.Services.ChromeSync;
 using Reports.Services.Crm;
 using Reports.Services.Drivers;
 using Reports.Services.Export;
-using Reports.Utilities;
 using MessageBox = System.Windows.MessageBox;
 
 namespace Reports.Tabs.CreateDriver;
@@ -19,10 +13,9 @@ public partial class CreateDriverPage : Page
 {
     private readonly IDriverDraftService _driverDraftService;
     private readonly IDriverSubmissionService _driverSubmissionService;
-    private readonly IDriversExportService _driversExportService;
     private readonly ICrmBrandResolver _brandResolver;
     private readonly IDriverPaths _driverPaths;
-    private readonly PhonesRepository _phonesRepository;
+    private readonly IBetterwayDriverSearch _betterwayDriverSearch;
     
     public ChromeSyncStore SyncStore { get; }
     public IReadOnlyList<string> ServiceTypes { get; }
@@ -34,8 +27,7 @@ public partial class CreateDriverPage : Page
         IDriverPaths driverPaths,
         IDriverDraftService driverDraftService,
         IDriverSubmissionService driverSubmissionService,
-        IDriversExportService driversExportService,
-        PhonesRepository phonesRepository)
+        IBetterwayDriverSearch betterwayDriverSearch)
     {
         InitializeComponent();
 
@@ -43,8 +35,7 @@ public partial class CreateDriverPage : Page
         _driverPaths = driverPaths;
         _driverDraftService = driverDraftService;
         _driverSubmissionService = driverSubmissionService;
-        _driversExportService = driversExportService;
-        _phonesRepository = phonesRepository;
+        _betterwayDriverSearch = betterwayDriverSearch;
 
         ServiceTypes = _brandResolver.ServiceTypes;
         SyncStore = syncStore;
@@ -52,46 +43,7 @@ public partial class CreateDriverPage : Page
         
         DataContext = this;
     }
-
-    private void ClearExcelMenu_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is not FrameworkElement { ContextMenu: not null } fe) return;
-        fe.ContextMenu.PlacementTarget = fe;
-        fe.ContextMenu.IsOpen = true;
-    }
-
-    private async void ClearExcel_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            using (Loading.BeginScope("מוחק את השורות... רגע סבלנות", "זה יכול לקחת עד כמה שניות..."))
-            {
-
-                if (sender is not MenuItem mi) return;
-
-                var serviceType = mi.Tag?.ToString()?.Trim();
-                if (string.IsNullOrWhiteSpace(serviceType)) return;
-
-                var excelPath = GetExcelPath(serviceType);
-
-                var confirm = MessageBox.Show(
-                    $"זה ימחק את כל השורות בקובץ {_driverPaths.DriversFile(serviceType)}\nלהמשיך?",
-                    "אישור מחיקה",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
-
-                if (confirm != MessageBoxResult.Yes)
-                    return;
-
-                await Task.Run(() => _driversExportService.ClearRows(excelPath, _driverPaths.DriversLastColToClear));            }
-
-            await Overlay.ShowAsync(true, "נמחק בהצלחה.");
-        }
-        catch (Exception ex)
-        {
-            await Overlay.ShowAsync(false, ex.ToString());
-        }
-    }
+    
 
     private async void Submit_Click(object sender, RoutedEventArgs e)
     {
@@ -100,26 +52,22 @@ public partial class CreateDriverPage : Page
             using (Loading.BeginScope("מיצא את פרטי הנהג... רגע סבלנות", "זה יכול לקחת עד כמה שניות..."))
             {
                 var draft = await _driverDraftService.LoadDraftAsync(View.ToDraftRequest());
+                
+                View.FillFromDraft(draft);
+                var result = await _betterwayDriverSearch.SearchAllProfilesAsync(draft.Phone);
 
-                var phoneExists = await _phonesRepository.ExistsAsync(draft.Phone, draft.ServiceType);
-
-                if (phoneExists)
+                if (result.FirstMatch is not null)
                 {
-                    var confirm = MessageBox.Show(
-                        "Driver exists already, do you wish to proceed?",
-                        "אישור המשך",
-                        MessageBoxButton.YesNo,
+                    // Real signal: same customer exists in multiple profiles.
+                    var profilesList = string.Join(", ", result.ProfilesWithMatch);
+                    MessageBox.Show(
+                        $"Driver found in: {profilesList}",
+                        "Driver found!",
+                        MessageBoxButton.OK,
                         MessageBoxImage.Warning);
-
-                    if (confirm != MessageBoxResult.Yes)
-                    {
-                        View.ShowInput();
-                        return;
-                    }
-                    
+                    View.FillFromDriver(result.FirstMatch);
                 }
 
-                View.FillFromDraft(draft);
                 View.ShowData();
             }
         }
@@ -139,10 +87,9 @@ public partial class CreateDriverPage : Page
                 var submission = View.ToSubmission(brand);
 
                 var result = await _driverSubmissionService.SubmitAsync(submission);
-                await _phonesRepository.InsertAsync(submission.Phone, submission.ServiceType);
-                
+
                 View.ShowInput();
-                await Overlay.ShowAsync(true, $"שורה נוספה לקובץ {result.DriversFileName}", 4000);
+                await Overlay.ShowAsync(true, $"Create driver response {result.ResponseBody}", 4000);
             }
         }
         catch (Exception ex)
@@ -150,10 +97,6 @@ public partial class CreateDriverPage : Page
             await Overlay.ShowAsync(false, ex.ToString());
         }
     }
-    
-
-    private string GetExcelPath(string serviceType)
-        => Path.Combine(_driverPaths.DriversFolderPath, _driverPaths.DriversFile(serviceType));
     
 
     private void PreviousPage_Click(object sender, RoutedEventArgs e) => View.ShowInput();

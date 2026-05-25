@@ -63,7 +63,7 @@ public sealed class ChromeTabsListener(ChromeSyncStore store) : BackgroundServic
 
                     await Application.Current.Dispatcher.InvokeAsync(() =>
                     {
-                        store.ReplaceAll(urls, cookiesByOrigin);
+                        store.ReplaceAll(urls, cookiesByOrigin, payload?.BetterwayRefreshToken);
                     });
 
                     ctx.Response.StatusCode = 200;
@@ -104,4 +104,5 @@ public sealed class ChromeSyncPayload
     public string? UpdatedAt { get; init; }
     public List<string>? Urls { get; init; }
     public Dictionary<string, Dictionary<string, string>>? CookiesByOrigin { get; init; }
+    public string? BetterwayRefreshToken { get; init; }
 }

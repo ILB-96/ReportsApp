@@ -11,7 +11,10 @@ public sealed class ChromeSyncStore
     private readonly Dictionary<string, IReadOnlyDictionary<string, string>> _cookiesByOrigin =
         new(StringComparer.OrdinalIgnoreCase);
 
-    public void ReplaceAll(IEnumerable<string> urls, IDictionary<string, Dictionary<string, string>> cookiesByOrigin)
+    private string? _betterwayRefreshToken;
+    
+    public void ReplaceAll(IEnumerable<string> urls, IDictionary<string, Dictionary<string, string>> cookiesByOrigin,
+        string? payloadBetterwayRefreshToken)
     {
         var filteredUrls = urls
             .Where(IsRelevantCrmUrl)
@@ -51,8 +54,16 @@ public sealed class ChromeSyncStore
 
                 _cookiesByOrigin[uri.GetLeftPart(UriPartial.Authority)] = filteredCookies;
             }
+            if (!string.IsNullOrWhiteSpace(payloadBetterwayRefreshToken))
+                _betterwayRefreshToken = payloadBetterwayRefreshToken;
         }
     }
+    public string? GetBetterwayRefreshToken()
+    {
+        lock (_gate)
+            return _betterwayRefreshToken;
+    }
+
 
     public IReadOnlyDictionary<string, string> GetCookiesForOrigin(string origin)
     {

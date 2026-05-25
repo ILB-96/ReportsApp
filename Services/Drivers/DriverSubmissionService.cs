@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Reports.Services.BetterwayApi;
 using Reports.Services.Export;
 using Reports.Services.Files;
 using Reports.Services.Templates;
@@ -17,13 +18,29 @@ public sealed class DriverSubmissionService(
     IFileDownloader fileDownloader,
     IShellService shellService,
     IDriversExportService driversExportService,
-    IDocxTemplateGenerator docxTemplateGenerator)
+    IDocxTemplateGenerator docxTemplateGenerator,
+    IBetterwayDriverApi betterwayApi)
     : IDriverSubmissionService
 {
     public async Task<DriverSubmissionResult> SubmitAsync(DriverSubmission submission, CancellationToken ct = default)
     {
         ValidateSubmission(submission);
+        var profile = BetterwayProfileResolver.Resolve(submission.ServiceType);
+        var payload = new DriverImportPayload(
+            PlateNumber:        submission.CarLicense.Replace("-",""),
+            ContractStartDate:  DateInputParser.Parse(submission.ReportStartDate),
+            ContractEndDate:    DateInputParser.Parse(submission.ReportEndDate),
+            Name:               submission.AccountFullName,
+            IdNumber:           submission.DriverId,
+            PhoneNumber:        submission.Phone,
+            LicenseNumber:      submission.DriverLicense,
+            Email:              submission.Email,
+            Street:             submission.Address,
+            HouseNumber:        submission.House,
+            City:               submission.City,
+            ZipCode:            submission.PostalCode);
 
+        var result = await betterwayApi.CreateDriverAsync(payload, profile, ct);
         Directory.CreateDirectory(driverPaths.DriversFolderPath);
 
         var accountFolder = Path.Combine(
@@ -41,10 +58,10 @@ public sealed class DriverSubmissionService(
 
         shellService.OpenDirectory(accountFolder);
 
-        var excelPath = Path.Combine(driverPaths.DriversFolderPath, driverPaths.DriversFile(submission.ServiceType));
-        var row = BuildExcelRow(submission);
-
-        driversExportService.AppendRow(excelPath, row);
+        // var excelPath = Path.Combine(driverPaths.DriversFolderPath, driverPaths.DriversFile(submission.ServiceType));
+        // var row = BuildExcelRow(submission);
+        //
+        // driversExportService.AppendRow(excelPath, row);
         
         var shouldGenerateAgreement =
             !string.IsNullOrWhiteSpace(submission.ReservationNumber) ||
@@ -55,7 +72,7 @@ public sealed class DriverSubmissionService(
 
         return new DriverSubmissionResult
         {
-            ExcelPath = excelPath,
+            ResponseBody = result,
             DriversFileName = driverPaths.DriversFile(submission.ServiceType),
             AccountFolder = accountFolder,
             AgreementGenerated = shouldGenerateAgreement

