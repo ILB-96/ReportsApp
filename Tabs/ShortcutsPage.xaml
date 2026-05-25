@@ -71,6 +71,7 @@
                                    Tag="goto"
                                    FontWeight="SemiBold"
                                    Click="Paid_Click"
+                                   Cursor="Hand"
                                    Margin="0 6">
                             <StackPanel Orientation="Horizontal">
                                 <ui:SymbolIcon Symbol="ClipboardTaskAdd24" Margin="0,0,4,0"/>
@@ -85,6 +86,7 @@
                                    FontWeight="SemiBold"
                                    MouseOverBackground="Orange"
                                    PressedBackground="#FFA65D"
+                                   Cursor="Hand"
                                    Click="Paid_Click">
                             <StackPanel Orientation="Horizontal">
                                 <ui:SymbolIcon Symbol="ClipboardTaskAdd24" Margin="0,0,4,0"/>
@@ -99,6 +101,7 @@
                                    MouseOverBackground="#0D9488"
                                    PressedBackground="#14B8A6"
                                    Click="Copy_Template_Click"
+                                   Cursor="Hand"
                                    Margin="0 6">
                             <StackPanel Orientation="Horizontal">
                                 <ui:SymbolIcon Symbol="ClipboardTaskAdd24" Margin="0,0,4,0"/>
@@ -113,6 +116,7 @@
                                    MouseOverBackground="#A855F7"
                                    PressedBackground="#C084FC"
                                    Click="Copy_Template_Click"
+                                   Cursor="Hand"
                                    Margin="0 6">
                             <StackPanel Orientation="Horizontal">
                                 <ui:SymbolIcon Symbol="ClipboardTaskAdd24" Margin="0,0,4,0"/>
@@ -126,6 +130,7 @@
                                    FontWeight="SemiBold"
                                    MouseOverBackground="#6366F1"
                                    PressedBackground="#818CF8"
+                                   Cursor="Hand"
                                    Click="Copy_Template_Click"
                                    Margin="0 6">
                             <StackPanel Orientation="Horizontal">
@@ -141,6 +146,7 @@
                                    FontWeight="SemiBold"
                                    MouseOverBackground="#A855F7"
                                    PressedBackground="#C084FC"
+                                   Cursor="Hand"
                                    Click="Copy_Template_Click"
                                    Margin="0 6">
                             <StackPanel Orientation="Horizontal">
@@ -156,6 +162,7 @@
                                    FontWeight="SemiBold"
                                    MouseOverBackground="#E11D48"
                                    PressedBackground="#FB7185"
+                                   Cursor="Hand"
                                    Click="Copy_Template_Click"
                                    Margin="0 6">
                             <StackPanel Orientation="Horizontal">
@@ -169,6 +176,7 @@
                                    FontWeight="SemiBold"
                                    MouseOverBackground="#E11D48"
                                    PressedBackground="#FB7185"
+                                   Cursor="Hand"
                                    Click="Copy_Dynamic_Click"
                                    Margin="0 6">
                             <StackPanel Orientation="Horizontal">
@@ -182,6 +190,7 @@
                                    FontWeight="SemiBold"
                                    MouseOverBackground="#E11D48"
                                    PressedBackground="#FB7185"
+                                   Cursor="Hand"
                                    Click="Copy_Dynamic_Click"
                                    Margin="0 6">
                             <StackPanel Orientation="Horizontal">

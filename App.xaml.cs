@@ -14,7 +14,6 @@ using Reports.Services.Drivers;
 using Reports.Services.Email;
 using Reports.Services.Email.CustomerRequests;
 using Reports.Services.Email.OperationMail;
-using Reports.Services.Export;
 using Reports.Services.Files;
 using Reports.Services.Navigation;
 using Reports.Services.Templates;
@@ -71,7 +70,6 @@ public partial class App : Application
                 services.AddSingleton<IWordPdfExporter, WordPdfExporter>();
                 services.AddSingleton<IFileDownloader, FileDownloaderService>();
                 services.AddSingleton<IShellService, ShellServiceAdapter>();
-                services.AddSingleton<IDriversExportService, DriversExportServiceAdapter>();
                 services.AddSingleton<IDocxTemplateGenerator, DocxTemplateGeneratorAdapter>();
                 services.AddSingleton<IAddressParser, AddressParser>();
                 services.AddSingleton<IEmailComposerService, EmailComposerService>();

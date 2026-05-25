@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using Reports.Services.BetterwayApi;
-using Reports.Services.Export;
 using Reports.Services.Files;
 using Reports.Services.Templates;
 using Reports.Utilities;
@@ -17,7 +16,6 @@ public sealed class DriverSubmissionService(
     IWordPdfExporter pdfExporter,
     IFileDownloader fileDownloader,
     IShellService shellService,
-    IDriversExportService driversExportService,
     IDocxTemplateGenerator docxTemplateGenerator,
     IBetterwayDriverApi betterwayApi)
     : IDriverSubmissionService
@@ -27,7 +25,7 @@ public sealed class DriverSubmissionService(
         ValidateSubmission(submission);
         var profile = BetterwayProfileResolver.Resolve(submission.ServiceType);
         var payload = new DriverImportPayload(
-            PlateNumber:        submission.CarLicense.Replace("-",""),
+            PlateNumber:        NormalizePlate(submission.CarLicense),
             ContractStartDate:  DateInputParser.Parse(submission.ReportStartDate),
             ContractEndDate:    DateInputParser.Parse(submission.ReportEndDate),
             Name:               submission.AccountFullName,
@@ -57,11 +55,6 @@ public sealed class DriverSubmissionService(
         await fileDownloader.MoveIfExistsAsync(submission.ReturnLink, accountFolder, ct);
 
         shellService.OpenDirectory(accountFolder);
-
-        // var excelPath = Path.Combine(driverPaths.DriversFolderPath, driverPaths.DriversFile(submission.ServiceType));
-        // var row = BuildExcelRow(submission);
-        //
-        // driversExportService.AppendRow(excelPath, row);
         
         var shouldGenerateAgreement =
             !string.IsNullOrWhiteSpace(submission.ReservationNumber) ||
@@ -78,23 +71,7 @@ public sealed class DriverSubmissionService(
             AgreementGenerated = shouldGenerateAgreement
         };
     }
-
-    private Dictionary<string, DriverRowValue> BuildExcelRow(DriverSubmission submission) => new()
-    {
-        ["CarLicense"]      = new() { Col = 1,  Val = NormalizePlate(submission.CarLicense) },
-        ["ReportStartDate"] = new() { Col = 2,  Val = submission.ReportStartDate.Trim() },
-        ["ReportEndDate"]   = new() { Col = 3,  Val = submission.ReportEndDate.Trim() },
-        ["AccountFullName"] = new() { Col = 4,  Val = submission.AccountFullName.Trim() },
-        ["DriverId"]        = new() { Col = 5,  Val = submission.DriverId.Trim() },
-        ["Phone"]           = new() { Col = 6,  Val = submission.Phone.Trim() },
-        ["DriverLicense"]   = new() { Col = 7,  Val = submission.DriverLicense.Trim() },
-        ["Address"]         = new() { Col = 9,  Val = submission.Address.Trim() },
-        ["House"]           = new() { Col = 10, Val = submission.House.Trim() },
-        ["City"]            = new() { Col = 11, Val = submission.City.Trim() },
-        ["Email"]           = new() { Col = 8,  Val = submission.Email.Trim() },
-        ["PostalCode"]      = new() { Col = 12, Val = submission.PostalCode.Trim() },
-    };
-
+    
     private void ValidateSubmission(DriverSubmission submission)
     {
         if (submission.ReportStartDate == submission.ReportEndDate)
