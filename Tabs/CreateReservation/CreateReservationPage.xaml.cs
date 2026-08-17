@@ -1,40 +1,34 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using Reports.Services.BetterwayApi;
 using Reports.Services.ChromeSync;
 using Reports.Services.Crm;
 using Reports.Services.Drivers;
-using Reports.Services.GotoTech;
 using Wpf.Ui.Controls;
 using MessageBox = System.Windows.MessageBox;
 using MessageBoxButton = System.Windows.MessageBoxButton;
 using Thickness = System.Windows.Thickness;
 
-namespace Reports.Tabs.CreateDriver;
+namespace Reports.Tabs.CreateReservation;
 
-public partial class CreateDriverPage : Page
+public partial class CreateReservationPage : Page
 {
     private readonly IDriverDraftService _driverDraftService;
     private readonly IDriverSubmissionService _driverSubmissionService;
     private readonly ICrmBrandResolver _brandResolver;
     private readonly IBetterwayDriverSearch _betterwayDriverSearch;
-    private readonly IBetterwayClientSearch _betterwayClientSearch;
     
     public ChromeSyncStore SyncStore { get; }
     public IReadOnlyList<string> ServiceTypes { get; }
 
-    public CreateDriverView View { get; }
-    public CreateDriverPage(
+    public CreateReservationView View { get; }
+    public CreateReservationPage(
         ChromeSyncStore syncStore,
         ICrmBrandResolver brandResolver,
         IDriverDraftService driverDraftService,
         IDriverSubmissionService driverSubmissionService,
-        IBetterwayDriverSearch betterwayDriverSearch,
-        IBetterwayClientSearch betterwayClientSearch)
+        IBetterwayDriverSearch betterwayDriverSearch)
     {
         InitializeComponent();
 
@@ -42,11 +36,10 @@ public partial class CreateDriverPage : Page
         _driverDraftService = driverDraftService;
         _driverSubmissionService = driverSubmissionService;
         _betterwayDriverSearch = betterwayDriverSearch;
-        _betterwayClientSearch = betterwayClientSearch;
 
         ServiceTypes = _brandResolver.ServiceTypes;
         SyncStore = syncStore;
-        View = new CreateDriverView();
+        View = new CreateReservationView();
         
         DataContext = this;
     }
@@ -62,16 +55,14 @@ public partial class CreateDriverPage : Page
                 View.FillFromReservation(reservation);
                 View.FillFromDraft(draft);
                 
-                var driversResult = await _betterwayDriverSearch.SearchAllProfilesAsync(draft.Phone);
-
-                
+                var result = await _betterwayDriverSearch.SearchAllProfilesAsync(draft.Phone);
                 DriverSearchHit? chosen = null;
-                switch (driversResult.AllHits.Count)
+                switch (result.AllHits.Count)
                 {
                     case 1:
                     {
-                        chosen = driversResult.AllHits[0];
-                        var profilesList = string.Join(", ", driversResult.ProfilesWithMatch);
+                        chosen = result.AllHits[0];
+                        var profilesList = string.Join(", ", result.ProfilesWithMatch);
                         MessageBox.Show(
                             $"Driver found in: {profilesList}",
                             "Driver found!",
@@ -81,7 +72,7 @@ public partial class CreateDriverPage : Page
                     }
                     case > 1:
                     {
-                        var picked = await PickDriverAsync(driversResult.AllHits);
+                        var picked = await PickDriverAsync(result.AllHits);
                         if (picked is null) return; // user cancelled
                         chosen = picked;
                         break;
@@ -92,19 +83,6 @@ public partial class CreateDriverPage : Page
                 {
                     View.FillFromDriver(chosen.Driver);
                 }
-                
-                var clientsResult = await _betterwayClientSearch.SearchAllProfilesAsync(View.DriverId);
-
-                if (clientsResult.AllHits.Count >= 1)
-                {
-                    var profilesList = string.Join(", ", clientsResult.ProfilesWithMatch); // was driversResult
-                    MessageBox.Show(
-                        $"Client found in: {profilesList}",
-                        "Client found!",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-                
                 View.ShowData();
             }
         }
@@ -118,13 +96,13 @@ public partial class CreateDriverPage : Page
     {
         try
         {
-            using (Loading.BeginScope("מייצר קבצים... רגע סבלנות", "זה יכול לקחת עד כמה שניות..."))
+            using (Loading.BeginScope("מייצר נהג... רגע סבלנות", "זה יכול לקחת עד כמה שניות..."))
             {
                 var brand = _brandResolver.ServiceTypeFromUrl(View.Url);
                 var submission = View.ToSubmission(brand);
                 var reservation = View.ToReservation(brand);
 
-                var result = await _driverSubmissionService.SubmitAsync(submission, reservation);
+                var result = await _driverSubmissionService.SubmitAsync(submission, reservation, false);
 
                 var success = !result.ResponseBody.Contains("לא נמצא") && !result.ResponseBody.Contains("קיים");
                 if (success)

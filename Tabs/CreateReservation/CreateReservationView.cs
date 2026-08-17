@@ -1,13 +1,14 @@
 ﻿using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using Reports.Services.BetterwayApi;
 using Reports.Services.Drivers;
 using Reports.Services.Reservation;
 
-namespace Reports.Tabs.CreateDriver;
+namespace Reports.Tabs.CreateReservation;
 
-public sealed partial class CreateDriverView : INotifyPropertyChanged
+public sealed partial class CreateReservationView : INotifyPropertyChanged
 {
     private string _url = string.Empty;
     

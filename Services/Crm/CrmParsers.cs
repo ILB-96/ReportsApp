@@ -93,6 +93,14 @@ public static class CrmParsers
         return (accountId, isLeasing, contactId, partial);
     }
 
+    public static DriverAgreementData ParseAgreement(Dictionary<string, object>? account)
+    {
+        var fullName = account.GetFirstNonEmpty("fullname", "name", "_c2g_driverid_value@OData.Community.Display.V1.FormattedValue");
+        var createdOn = account.GetString("createdon@OData.Community.Display.V1.FormattedValue") ?? string.Empty;
+        
+        return new DriverAgreementData(fullName, createdOn, null);
+    }
+
     public static DriverData MergeAccount(DriverData baseData, Dictionary<string, object>? account)
     {
         var driverId = account.GetFirstNonEmpty("c2g_idno", "c2g_privatecompanyno").DigitsOnly();

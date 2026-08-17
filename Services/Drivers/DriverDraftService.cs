@@ -1,17 +1,21 @@
-﻿using Reports.Services.Crm;
+﻿using System.Text.Json;
+using Reports.Services.Crm;
+using Reports.Services.GotoTech;
+using Reports.Services.Reservation;
 
 namespace Reports.Services.Drivers;
 
 public interface IDriverDraftService
 {
-    Task<CreateDriverDraft> LoadDraftAsync(CreateDriverRequest request, CancellationToken ct = default);
+    Task<(CreateDriverDraft, ReservationReceipt?)> LoadDraftAsync(CreateDriverRequest request, CancellationToken ct = default);
 }
 public sealed class DriverDraftService(
     ICrmBrandResolver brandResolver,
-    ICrmCookieProvider cookieProvider)
+    ICrmCookieProvider cookieProvider,
+    GotoTechApiClient gotoTechApiClient)
     : IDriverDraftService
 {
-    public async Task<CreateDriverDraft> LoadDraftAsync(CreateDriverRequest request, CancellationToken ct = default)
+    public async Task<(CreateDriverDraft, ReservationReceipt?)> LoadDraftAsync(CreateDriverRequest request, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(request.Url))
             throw new InvalidOperationException("URL is required.");
@@ -41,8 +45,62 @@ public sealed class DriverDraftService(
             : await crm.GetAccountAsync(accountId);
 
         var data = CrmParsers.MergeAccount(partial, account);
+        ReservationReceipt? reservationReceipt = null;
+        if (!string.IsNullOrWhiteSpace(data.ReservationNumber))
+        {
+            var region = ResolveRegion(brand);
+            
+            if (region is not null)
+            {
+                var resp = await gotoTechApiClient.GetReservationAsync(region.Value, data.ReservationNumber, ct);
+                if (resp.IsSuccess)
+                {
+                    var reservation = resp.DeserializeData<JsonElement>();
 
-        return new CreateDriverDraft
+                    var carId            = reservation.TryGetProperty("carId",          out var p0) ? p0.GetInt64()       : (long?)null;
+                    var actualStartDate  = reservation.TryGetProperty("actualStartDate",out var p1) ? ToStringValue(p1)   : string.Empty;
+                    var actualEndDate    = reservation.TryGetProperty("actualEndDate",  out var p2) ? ToStringValue(p2)   : string.Empty;
+                    var reservationCost  = reservation.TryGetProperty("cost",           out var p3) ? p3.GetDecimal()     : 0;
+                    var parkingAddress   = reservation.TryGetProperty("endAddressHe", out var p4) ? ToStringValue(p4)   : string.Empty;
+                    var distanceKm       = reservation.TryGetProperty("distanceKM",     out var p5) ? ToStringValue(p5)   : string.Empty;
+                    var resp2 = await gotoTechApiClient.GetCarBoAsync(region.Value, carId, ct);
+                    var carBo = resp2.DeserializeData<JsonElement>();
+                    var carManufacturerName       = carBo.TryGetProperty("carManufacturerName",     out var p6) ? ToStringValue(p6)   : string.Empty;
+                    var carModelName       = carBo.TryGetProperty("carModelName",     out var p7) ? ToStringValue(p7)   : string.Empty;
+                    if (String.IsNullOrWhiteSpace(parkingAddress))
+                        parkingAddress   = reservation.TryGetProperty("startAddressHe", out var p8) ? ToStringValue(p8)   : string.Empty;
+                    if (String.IsNullOrWhiteSpace(parkingAddress))
+                        parkingAddress   = reservation.TryGetProperty("parkingAddress", out var p9) ? ToStringValue(p9)   : string.Empty;
+
+                    
+                    reservationReceipt = new ReservationReceipt
+                    {
+                        DriverName           = data.AccountFullName,
+                        DriverId             = data.DriverId,
+                        CarLicense           = data.CarLicense,
+                        CarType              = $"{carManufacturerName} {carModelName}",             // not in response yet
+                        OriginAddress        = parkingAddress,
+                        ReservationStartTime = actualStartDate,
+                        ReservationEndTime   = actualEndDate,
+                        ReservationCost      = reservationCost,
+                        ReservationId        = data.ReservationNumber,
+                        DistanceKm           = distanceKm,
+                        Brand               = brand
+                    };
+                }
+            }
+        }
+
+        string? ToStringValue(JsonElement el) => el.ValueKind switch
+        {
+            JsonValueKind.String  => el.GetString(),
+            JsonValueKind.Number  => el.GetRawText(),
+            JsonValueKind.True    => "true",
+            JsonValueKind.False   => "false",
+            JsonValueKind.Null    => null,
+            _                     => el.GetRawText()
+        };
+        var driverDraft = new CreateDriverDraft
         {
             Brand = brand,
             ServiceType = NormalizeServiceType(data.ServiceType),
@@ -68,7 +126,21 @@ public sealed class DriverDraftService(
             PickupLink = data.PickupLink,
             ReturnLink = data.ReturnLink
         };
+        return (driverDraft, reservationReceipt);
     }
+    private static BoRegion? ResolveRegion(string brand)
+    {
+        var lower = brand.ToLowerInvariant();
+
+        if (lower.Contains("goto"))
+            return BoRegion.Car2Go;
+
+        if (lower.Contains("autotel"))
+            return BoRegion.Autotel;
+
+        return null;
+    }
+
 
     private static string NormalizeServiceType(string brand)
     {

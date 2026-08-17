@@ -1,6 +1,4 @@
-﻿
-
-using Reports.Services.BetterwayApi;
+﻿namespace Reports.Services.BetterwayApi;
 
 public sealed record BetterwayDriver(
     int Id,
@@ -35,4 +33,3 @@ internal sealed record DriverSearchResponse(
     int TotalResults,
     int TotalPages,
     int CurrentPage);
-    

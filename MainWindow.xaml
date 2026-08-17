@@ -6,6 +6,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:tabs="clr-namespace:Reports.Tabs"
         xmlns:tabs.CreateDriver="clr-namespace:Reports.Tabs.CreateDriver"
+        xmlns:tabs.CreateReservation="clr-namespace:Reports.Tabs.CreateReservation"
+        xmlns:tabs.CreateIncident="clr-namespace:Reports.Tabs.CreateIncident"
+        xmlns:tabs.CreateAgreement="clr-namespace:Reports.Tabs.CreateAgreement"
         FlowDirection="RightToLeft"
         Title="FinesDesk"
         MinWidth="300"
@@ -71,8 +74,8 @@
 
 
                 <ui:NavigationViewItem Content="הסכם"
-                                       Tag="AgreementForm"
-                                       TargetPageType="{x:Type tabs:AgreementForm}"
+                                       Tag="CreateAgreement"
+                                       TargetPageType="{x:Type tabs.CreateAgreement:CreateAgreement}"
                                        NavigationCacheMode="Disabled"
                                        FocusVisualStyle="{x:Null}">
                     <ui:NavigationViewItem.Icon>
@@ -82,7 +85,7 @@
                 <ui:NavigationViewItem Content="הזמנה"
                                        Tag="ReservationForm"
                                        NavigationCacheMode="Disabled"
-                                       TargetPageType="{x:Type tabs:ReservationForm}"
+                                       TargetPageType="{x:Type tabs.CreateReservation:CreateReservationPage}"
                                        FocusVisualStyle="{x:Null}">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="VehicleCarParking16"/>
@@ -106,7 +109,20 @@
                         <ui:SymbolIcon Symbol="ContactCard16"/>
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
+                <ui:NavigationViewItem Content="קייס"
+                                       Tag="Case"
+                                       TargetPageType="{x:Type tabs.CreateIncident:CreateIncident}"
+                                       NavigationCacheMode="Disabled"
+                                       FocusVisualStyle="{x:Null}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Briefcase16"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>
         </ui:NavigationView>
+        
+        <ContentPresenter x:Name="RootContentDialogPresenter"
+                          Grid.Row="0"
+                          Grid.RowSpan="2"/>
     </Grid>
 </ui:FluentWindow>

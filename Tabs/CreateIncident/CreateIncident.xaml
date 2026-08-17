@@ -1,0 +1,164 @@
+﻿<Page x:Class="Reports.Tabs.CreateIncident.CreateIncident"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:Reports.Controls"
+             FlowDirection="RightToLeft"
+             d:DesignHeight="900"
+             d:DesignWidth="600"
+             ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance }">
+    <Grid Margin="5" VerticalAlignment="Top" >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Card with form -->
+        <ui:Card Grid.Row="1" Padding="20" Margin="0,0,0,10" Background="Transparent" Visibility="{Binding View.InputPanelVisibility}">
+            <Grid Grid.IsSharedSizeScope="True" FlowDirection="RightToLeft">
+                <Grid.ColumnDefinitions>
+                    <!-- Pair #1 -->
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Regular Text Fields -->
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="לינק ללקוח:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <controls:FuzzyUrlComboBox Grid.Row="0" Grid.Column="1"
+                                           x:Name="Url"
+                                           ItemsSource="{Binding SyncStore.TabUrls}"
+                                           Text="{Binding View.Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                
+                <ui:TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                            Text="{Binding View.Data, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            AcceptsReturn="True"
+                            TextWrapping="Wrap"
+                            VerticalScrollBarVisibility="Auto"
+                            MinHeight="200"
+                            x:Name="Data"
+                            Margin="0,5,0,0"
+                            HorizontalAlignment="Stretch"
+                            VerticalContentAlignment="Top"
+                            TextAlignment="Right"/>
+                
+                <!-- Submit Button -->
+                <ui:Button Content="יצא" Grid.Row="2" Grid.Column="1"
+                        Margin="0,20,0,0"
+                        HorizontalAlignment="Stretch"
+                        IsDefault="True"
+                        Click="Submit_Click"
+                        MaxWidth="150"
+                        Appearance="Primary"
+                        Cursor="Hand"
+                        FontWeight="Bold"/>
+                
+            </Grid>
+        </ui:Card>
+        <ui:Card Grid.Row="1"
+                 Padding="20"
+                 Margin="0,0,0,10"
+                 Background="Transparent"
+                 Visibility="{Binding View.DataPanelVisibility}"
+                 FlowDirection="RightToLeft">
+
+            <!-- One grid = consistent alignment for all rows -->
+            <Grid Grid.IsSharedSizeScope="True" FlowDirection="RightToLeft">
+                <Grid.ColumnDefinitions>
+                    <!-- Pair #1 -->
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                    <ColumnDefinition Width="*" />
+                    <!-- Gap -->
+                    <ColumnDefinition Width="20" />
+                    <!-- Pair #2 -->
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="תאריך הדוח:" VerticalAlignment="Center" Margin="0,5,8,0" />
+                <ui:TextBox Grid.Row="0" Grid.Column="1"  Text="{Binding View.ExecutionDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <TextBlock Grid.Row="0" Grid.Column="3" Text="מספר לקוח:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="0" Grid.Column="4" Text="{Binding View.AccountId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="לוחית רישוי:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="1" Grid.Column="1" Text="{Binding View.CarLicense, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="3" Text="מספר הזמנה:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="1" Grid.Column="4" Text="{Binding View.ReservationNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="מספר דוח:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="2" Grid.Column="1" Text="{Binding View.ReportNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="3" Text="כתובת הדוח:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="2" Grid.Column="4" Text="{Binding View.ReportAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="רשות:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="3" Grid.Column="1" Text="{Binding View.Municipality, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <TextBlock Grid.Row="3" Grid.Column="3" Text="תיאור:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="3" Grid.Column="4" Text="{Binding View.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="סכום:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="4" Grid.Column="1" Text="{Binding View.ReportCost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+
+                <TextBlock Grid.Row="4" Grid.Column="3" Text="סיבה:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <controls:FuzzyUrlComboBox Grid.Row="4" Grid.Column="4"
+                                           ItemsSource="{Binding View.ReportReasonNames}"
+                                           Text="{Binding View.ReportReason, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                           Margin="0,5,0,0"/>
+                
+                <TextBlock Grid.Row="5" Grid.Column="0" Text="מזהה רכב:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <ui:TextBox Grid.Row="5" Grid.Column="1" Text="{Binding View.VehicleId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" HorizontalAlignment="Stretch" TextAlignment="Right"/>
+                
+                <TextBlock Grid.Row="5" Grid.Column="3" Text="ליסינג:" VerticalAlignment="Center" Margin="0,5,8,0"/>
+                <controls:FuzzyUrlComboBox Grid.Row="5" Grid.Column="4"
+                                           ItemsSource="{Binding ServiceTypes}"
+                                           Text="{Binding View.ServiceType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                
+                <ui:Button Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="3"
+                           Content="שלח נתונים"
+                           Margin="4,20,0,0"
+                           HorizontalAlignment="Stretch"
+                           Appearance="Primary"
+                           FontWeight="Bold"
+                           MaxWidth="250"
+                           Cursor="Hand"
+                           Click="SendFinal_Click"/>
+                <ui:Button Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"
+                           Content="חזור"
+                           Margin="4,20,0,0"
+                           HorizontalAlignment="Stretch"
+                           Appearance="Secondary"
+                           Cursor="Hand"
+                           Click="PreviousPage_Click"/>
+            </Grid>
+        </ui:Card>
+        <controls:LoadingOverlay x:Name="Loading"
+                                 Grid.Row="0"
+                                 Grid.RowSpan="2"
+                                 IsCancelable="False"
+                                 MinimumShowTimeMilliseconds="250"/>
+        <controls:OverlayBanner x:Name="Overlay" Grid.Row="0"
+                                />
+
+    </Grid>
+</Page>

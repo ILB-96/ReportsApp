@@ -60,10 +60,12 @@ public sealed class ChromeTabsListener(ChromeSyncStore store) : BackgroundServic
                     var urls = payload?.Urls ?? new List<string>();
                     var cookiesByOrigin = payload?.CookiesByOrigin
                                           ?? new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+                    var sessionStorageByOrigin = payload?.SessionStorageByOrigin
+                                                 ?? new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
 
                     await Application.Current.Dispatcher.InvokeAsync(() =>
                     {
-                        store.ReplaceAll(urls, cookiesByOrigin, payload?.BetterwayRefreshToken);
+                        store.ReplaceAll(urls, cookiesByOrigin, payload?.BetterwayRefreshToken, sessionStorageByOrigin);
                     });
 
                     ctx.Response.StatusCode = 200;
@@ -93,6 +95,7 @@ public sealed class ChromeTabsListener(ChromeSyncStore store) : BackgroundServic
         }
         catch
         {
+            // ignored
         }
 
         return base.StopAsync(cancellationToken);
@@ -105,4 +108,5 @@ public sealed class ChromeSyncPayload
     public List<string>? Urls { get; init; }
     public Dictionary<string, Dictionary<string, string>>? CookiesByOrigin { get; init; }
     public string? BetterwayRefreshToken { get; init; }
+    public Dictionary<string, Dictionary<string, string>>? SessionStorageByOrigin { get; init; }
 }

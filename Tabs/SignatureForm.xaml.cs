@@ -1,15 +1,11 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Microsoft.Extensions.DependencyInjection;
-using Reports.Services;
 using Reports.Services.Templates;
 using Reports.Utilities;
 using Xceed.Words.NET;
@@ -35,43 +31,43 @@ public partial class SignatureForm
         
         private async void Submit_Click(object sender, RoutedEventArgs e)
         {
-            LoadingOverlay.Visibility = Visibility.Visible;
-            RootForm.IsEnabled = false;
-            
-            var toggle = TogglePanel.IsChecked ? "goto" : "autotel";
-            
-            var options = new FieldCollectorOptions
-            {
-                // optional Hebrew formatting:
-                BooleanFormatter = b => b ? "כן" : "לא",
-                DateFormatter    = dt => dt.ToString("dd/MM/yyyy", new CultureInfo("he-IL")),
-            };
-
-            var fields = FormFieldCollector.CollectFields(RootForm, options);
-
-            // Downloads folder
-            var downloadsPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                "Downloads"
-            );
-            Directory.CreateDirectory(downloadsPath);
-
-            fields.TryGetValue("Name", out var nameValue);
-            var safeName = FileNameUtils.SanitizeFileName(nameValue ?? string.Empty);
-            var docxPath = Path.Combine(downloadsPath, $"Signature - {safeName}.docx");
-
             try
             {
-                await Task.Run(() =>
+                LoadingOverlay.Visibility = Visibility.Visible;
+                RootForm.IsEnabled = false;
+            
+                var toggle = TogglePanel.IsChecked ? "goto" : "autotel";
+            
+                var options = new FieldCollectorOptions
                 {
-                    // Extract embedded template to memory
-                    var assembly = Assembly.GetExecutingAssembly();
-                    var resourceName = _templateCatalog.SignatureTemplate(toggle);
+                    // optional Hebrew formatting:
+                    BooleanFormatter = b => b ? "כן" : "לא",
+                    DateFormatter    = dt => dt.ToString("dd/MM/yyyy", new CultureInfo("he-IL")),
+                };
 
+                var fields = FormFieldCollector.CollectFields(RootForm, options);
 
+                // Downloads folder
+                var downloadsPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    "Downloads"
+                );
+                Directory.CreateDirectory(downloadsPath);
 
-                    using (Stream? stream = assembly.GetManifestResourceStream(resourceName))
+                fields.TryGetValue("Name", out var nameValue);
+                var safeName = FileNameUtils.SanitizeFileName(nameValue ?? string.Empty);
+                var docxPath = Path.Combine(downloadsPath, $"Signature - {safeName}.docx");
+
+                try
+                {
+                    await Task.Run(() =>
                     {
+                        // Extract embedded template to memory
+                        var assembly = Assembly.GetExecutingAssembly();
+                        var resourceName = _templateCatalog.SignatureTemplate(toggle);
+
+
+                        using Stream? stream = assembly.GetManifestResourceStream(resourceName);
                         if (stream == null)
                         {
                             MessageBox.Show("Template not found in resources. Check resource name.");
@@ -101,7 +97,6 @@ public partial class SignatureForm
                             MessageBox.Show("Please close 'Updated.docx' and try again.", "File In Use",
                                 MessageBoxButton.OK,
                                 MessageBoxImage.Warning);
-                            return;
                         }
                         finally
                         {
@@ -114,37 +109,40 @@ public partial class SignatureForm
                                 /* ignore */
                             }
                         }
-                    }
-                });
+                    });
 
 
-                // Open the generated file
-                Process.Start(new ProcessStartInfo
+                    // Open the generated file
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = docxPath,
+                        UseShellExecute = true
+                    });
+
+
+                    foreach (var tb in FormFieldCollector.FindVisualChildren<TextBox>(RootForm))
+                        tb.Clear();
+                }
+                catch (IOException ioEx)
                 {
-                    FileName = docxPath,
-                    UseShellExecute = true
-                });
-
-
-                foreach (var tb in FormFieldCollector.FindVisualChildren<TextBox>(RootForm))
-                    tb.Clear();
+                    MessageBox.Show(ioEx.Message, "File In Use",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                finally
+                {
+                    LoadingOverlay.Visibility = Visibility.Collapsed;
+                    RootForm.IsEnabled = true;
+                }
             }
-            catch (IOException ioEx)
+            catch (Exception)
             {
-                MessageBox.Show(ioEx.Message, "File In Use",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                 // TODO handle exception
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                LoadingOverlay.Visibility = Visibility.Collapsed;
-                RootForm.IsEnabled = true;
-            }
-
         }
         
         [GeneratedRegex("^[0-9-]+$")]

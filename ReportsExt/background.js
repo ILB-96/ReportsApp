@@ -9,7 +9,12 @@ const WANTED_COOKIE_NAMES = [
     "CrmOwinAuthC4",
     "CrmOwinAuthC5"
 ];
+const BO_ORIGINS = [
+    "https://car2gobo.gototech.co",
+    "https://prodautotelbo.gototech.co"
+];
 
+const WANTED_SESSION_KEYS = ["ngStorage-credentials"];
 function isCrmUrl(url) {
     return typeof url === "string" &&
         (url.startsWith("http://") || url.startsWith("https://")) &&
@@ -91,10 +96,48 @@ async function getBetterwayRefreshToken() {
     }
     return null;
 }
+
+function readSessionStorageKeys(keys) {
+    const out = {};
+    for (const k of keys) {
+        const v = window.sessionStorage.getItem(k);
+        if (v != null) out[k] = v;
+    }
+    return out;
+}
+
+async function getSessionStorageByOrigin() {
+    const sessionStorageByOrigin = {};
+
+    for (const origin of BO_ORIGINS) {
+        const tabs = await chrome.tabs.query({ url: origin + "/*" });
+
+        for (const tab of tabs) {
+            try {
+                const [{ result }] = await chrome.scripting.executeScript({
+                    target: { tabId: tab.id },
+                    func: readSessionStorageKeys,
+                    args: [WANTED_SESSION_KEYS],
+                    world: "MAIN"
+                });
+                if (result && Object.keys(result).length > 0) {
+                    sessionStorageByOrigin[origin] = result;
+                    break;
+                }
+            } catch {
+                // tab closed, navigated, restricted page — try the next one
+            }
+        }
+    }
+
+    return sessionStorageByOrigin;
+}
+
 async function pushChromeState() {
     const { urls, origins } = await getCrmOriginsFromTabs();
     const cookiesByOrigin = await getCookiesByOrigin(origins);
     const betterwayRefreshToken = await getBetterwayRefreshToken();
+    const sessionStorageByOrigin = await getSessionStorageByOrigin();
 
     await fetch(ENDPOINT, {
         method: "POST",
@@ -106,7 +149,8 @@ async function pushChromeState() {
             updatedAt: new Date().toISOString(),
             urls,
             cookiesByOrigin,
-            betterwayRefreshToken
+            betterwayRefreshToken,
+            sessionStorageByOrigin
         })
     }).catch(() => {});
 }
