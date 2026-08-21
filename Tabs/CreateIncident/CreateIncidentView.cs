@@ -108,7 +108,7 @@ public sealed partial class CreateIncidentView : INotifyPropertyChanged
             Data = Data.Trim()
         };
     }
-    public void FillFromDraft(ParkingFinePayload draft)
+    public void FillFromDraft(ParkingFinePayload? draft)
     {
         AccountId = draft.AccountId;
         ExecutionDate = draft.ExecutionDate;

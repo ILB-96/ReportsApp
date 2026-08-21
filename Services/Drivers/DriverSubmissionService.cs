@@ -54,6 +54,17 @@ public sealed class DriverSubmissionService(
         {
             await ValidateSubmission(submission, profile);
             result = await betterwayDriverApi.CreateDriverAsync(payload, profile, ct);
+            var success = !result.Contains("לא נמצא") && !result.Contains("קיים");
+            if (!success)
+            {
+                return new DriverSubmissionResult
+                {
+                    ResponseBody = result,
+                    DriversFileName = driverPaths.DriversFile(submission.ServiceType),
+                    AccountFolder = driverPaths.DriversFolderPath,
+                    AgreementGenerated = false
+                };
+            }
         }
         
         Directory.CreateDirectory(driverPaths.DriversFolderPath);
@@ -79,7 +90,7 @@ public sealed class DriverSubmissionService(
             var reservationReceipt = await GenerateReservationAsync(reservation, accountFolder, ct);
             pdfsToMerge.Add(reservationReceipt);
         }
-        var contract = await fileDownloader.ExtractPdfPagesAsync(submission.ContractLink.Replace("\"", ""), accountFolder, pageCount: 1,
+        var contract = await fileDownloader.ExtractPdfPagesAsync(submission.ContractLink.Replace("\"", ""), accountFolder, pageCount: 20,
             deleteOriginal: true, ct);
         if (String.IsNullOrWhiteSpace(contract))
         {

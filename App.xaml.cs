@@ -4,7 +4,6 @@ using Reports.Tabs.CreateDriver;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Reports.Configuration;
 using Reports.Utilities;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
@@ -24,10 +23,10 @@ using Reports.Services.Navigation;
 using Reports.Services.Templates;
 using Reports.Tabs;
 using Reports.Tabs.CreateAgreement;
-using Reports.Tabs.CreateDriver;
 using Reports.Tabs.CreateIncident;
 using Reports.Tabs.CreateReservation;
 using Wpf.Ui.Abstractions;
+using MessageBox = System.Windows.MessageBox;
 
 namespace Reports;
 
@@ -40,13 +39,23 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        base.OnStartup(e);
-        
         ApplicationThemeManager.Apply(
             ApplicationTheme.Light,   // or Dark
             WindowBackdropType.Mica,  // or Tabbed, Acrylic, etc.
             true                      // force update existing windows
         );
+        DispatcherUnhandledException += (s, args) =>
+        {
+            MessageBox.Show("משהו השתבש. השגיאה נרשמה.");
+            args.Handled = true;      // משאיר את האפליקציה בחיים
+        };
+
+        TaskScheduler.UnobservedTaskException += (s, args) =>
+        {
+            args.SetObserved();
+        };
+
+        base.OnStartup(e);
         
         _host = Host.CreateDefaultBuilder()
             .ConfigureLogging(logging =>

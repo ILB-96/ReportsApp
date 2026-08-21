@@ -8,52 +8,58 @@ namespace Reports.Services.Crm;
 
 public sealed class CrmApi(HttpClient http) : IDisposable
 {
-    public Task<Dictionary<string, object>?> GetIncidentAsync(string incidentId)
-        => GetAsync($"/api/data/v9.0/incidents({incidentId})", "incident.json");
+    public Task<Dictionary<string, object>?> GetIncidentAsync(string incidentId, CancellationToken ct = default)
+        => GetAsync($"/api/data/v9.0/incidents({incidentId})", "incident.json", ct);
 
-    public Task<Dictionary<string, object>?> GetAccountAsync(string accountId)
-        => GetAsync($"/api/data/v9.0/accounts({accountId})", "account.json");
-    
-    public Task<Dictionary<string, object>?> GetContactAsync(string accountId)
-        => GetAsync($"/api/data/v9.0/contacts({accountId})", "account.json");
-    public Task<Guid?> CreateParkingFineIncidentAsync(ParkingFinePayload payload)
-        => PostIncidentAsync(BuildParkingFineIncidentPayload(payload));
-    
-    public Task<Dictionary<string, object>?> GetVehicleByPlateAsync(string licensePlate)
+    public Task<Dictionary<string, object>?> GetAccountAsync(string accountId, CancellationToken ct = default)
+        => GetAsync($"/api/data/v9.0/accounts({accountId})", "account.json", ct);
+
+    public Task<Dictionary<string, object>?> GetContactAsync(string accountId, CancellationToken ct = default)
+        => GetAsync($"/api/data/v9.0/contacts({accountId})", "account.json", ct);
+
+    public Task<Guid?> CreateParkingFineIncidentAsync(ParkingFinePayload payload, CancellationToken ct = default)
+        => PostIncidentAsync(BuildParkingFineIncidentPayload(payload), ct);
+
+    public Task<Dictionary<string, object>?> GetVehicleByPlateAsync(string licensePlate, CancellationToken ct = default)
     {
-        return GetAsync($"/api/data/v9.0/new_vehicles?fetchXml={Uri.EscapeDataString(BuildVehicleByPlateFetchXml(licensePlate))}", "vehicle.json");
+        return GetAsync(
+            $"/api/data/v9.0/new_vehicles?fetchXml={Uri.EscapeDataString(BuildVehicleByPlateFetchXml(licensePlate))}",
+            "vehicle.json",
+            ct);
     }
-    private async Task<Dictionary<string, object>?> GetAsync(string path, string outputFileName)
+
+    private async Task<Dictionary<string, object>?> GetAsync(
+        string path, string outputFileName, CancellationToken ct = default)
     {
-        using var resp = await http.GetAsync(path);
+        using var resp = await http.GetAsync(path, ct).ConfigureAwait(false);
         resp.EnsureSuccessStatusCode();
-        var json = await resp.Content.ReadAsStringAsync();
-        
-        await SaveResponseJsonPrettyAsync(json, outputFileName);
-        
+        var json = await resp.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+
+        await SaveResponseJsonPrettyAsync(json, outputFileName, ct).ConfigureAwait(false);
+
         return JsonSerializer.Deserialize<Dictionary<string, object>>(json);
     }
-    public async Task<Guid?> PostIncidentAsync(object payload)
+
+    public async Task<Guid?> PostIncidentAsync(object payload, CancellationToken ct = default)
     {
-        var (_, entityUrl) = await PostAsync("/api/data/v9.0/incidents", payload);
+        var (_, entityUrl) = await PostAsync("/api/data/v9.0/incidents", payload, ct: ct).ConfigureAwait(false);
         return entityUrl is null ? null : ExtractGuidFromEntityUrl(entityUrl);
     }
 
-
     public async Task<(Dictionary<string, object>? Body, Uri? EntityUrl)> PostAsync(
-        string path, object payload, string? outputFileName = null)
+        string path, object payload, string? outputFileName = null, CancellationToken ct = default)
     {
         var json = JsonSerializer.Serialize(payload);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
-        using var resp = await http.PostAsync(path, content);
-        var respJson = await resp.Content.ReadAsStringAsync();
+        using var resp = await http.PostAsync(path, content, ct).ConfigureAwait(false);
+        var respJson = await resp.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
 
         if (!resp.IsSuccessStatusCode)
             throw new HttpRequestException(
                 $"CRM POST {path} failed ({(int)resp.StatusCode}): {respJson}");
 
         if (!string.IsNullOrWhiteSpace(outputFileName))
-            await SaveResponseJsonPrettyAsync(respJson, outputFileName);
+            await SaveResponseJsonPrettyAsync(respJson, outputFileName, ct).ConfigureAwait(false);
 
         Uri? entityUrl = null;
         if (resp.Headers.TryGetValues("OData-EntityId", out var values))
@@ -69,9 +75,9 @@ public sealed class CrmApi(HttpClient http) : IDisposable
 
         return (body, entityUrl);
     }
+
     private static Guid? ExtractGuidFromEntityUrl(Uri entityUrl)
     {
-        // Format: https://yourorg.crm4.dynamics.com/api/data/v9.0/incidents(GUID)
         var s = entityUrl.ToString();
         var open = s.LastIndexOf('(');
         var close = s.LastIndexOf(')');
@@ -79,36 +85,40 @@ public sealed class CrmApi(HttpClient http) : IDisposable
 
         return Guid.TryParse(s.Substring(open + 1, close - open - 1), out var g) ? g : null;
     }
-    private async Task<string> SaveResponseJsonPrettyAsync(string json, string outputFileName)
-    {
 
+    private static async Task<string> SaveResponseJsonPrettyAsync(
+        string json, string outputFileName, CancellationToken ct = default)
+    {
         using var doc = JsonDocument.Parse(json);
         var pretty = JsonSerializer.Serialize(doc.RootElement, new JsonSerializerOptions
         {
             WriteIndented = true
         });
 
-        await File.WriteAllTextAsync(outputFileName, pretty);
+        await File.WriteAllTextAsync(outputFileName, pretty, ct).ConfigureAwait(false);
         return outputFileName;
     }
-    public async Task<string> ExtractCrmContactId(string urlOrId)
+
+    public async Task<string> ExtractCrmContactId(string urlOrId, CancellationToken ct = default)
     {
         var id = ExtractCrmId(urlOrId);
 
         if (!urlOrId.Contains("incident")) return "";
-        
-        var incident = await GetIncidentAsync(id);
+
+        var incident = await GetIncidentAsync(id, ct).ConfigureAwait(false);
         return incident.GetString("_c2g_responsibledriver_value") ?? string.Empty;
     }
-    public async Task<string> ExtractCrmAccountId(string urlOrId)
+
+    public async Task<string> ExtractCrmAccountId(string urlOrId, CancellationToken ct = default)
     {
         var id = ExtractCrmId(urlOrId);
 
         if (!urlOrId.Contains("incident")) return id;
-        
-        var incident = await GetIncidentAsync(id);
+
+        var incident = await GetIncidentAsync(id, ct).ConfigureAwait(false);
         return incident.GetString("_customerid_value") ?? string.Empty;
     }
+
     public string ExtractCrmId(string urlOrId)
     {
         if (string.IsNullOrWhiteSpace(urlOrId)) return string.Empty;

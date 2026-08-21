@@ -42,13 +42,17 @@ public partial class CreateIncident : Page
     {
         try
         {
-            using (Loading.BeginScope("מיצא את פרטי הקייס... רגע סבלנות", "זה יכול לקחת עד כמה שניות..."))
-            {
-                var draft = await _incidentDraftService.LoadDraftAsync(View.ToDraftRequest());
-                View.FillFromDraft(draft);
-                
-                View.ShowData();
-            }
+            using var scope = Loading.BeginScope("מיצא את פרטי הקייס... רגע סבלנות", "זה יכול לקחת עד כמה שניות...", cancelable: true);
+            var ct = scope.Token;
+            var draft = await _incidentDraftService.LoadDraftAsync(View.ToDraftRequest(), ct);
+            
+            ct.ThrowIfCancellationRequested();
+            if (draft != null) View.FillFromDraft(draft);
+            View.ShowData();
+        }
+        catch (OperationCanceledException ex)
+        {
+            await Overlay.ShowAsync(false, "ביטול ידני על ידי המשתמש.");
         }
         catch (Exception ex)
         {

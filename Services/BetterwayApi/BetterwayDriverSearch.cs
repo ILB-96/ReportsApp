@@ -37,7 +37,7 @@ public sealed class BetterwayDriverSearch(
 
         Debug.WriteLine($"[Betterway] SearchAllProfiles start. Term={searchTerm}");
 
-        var token = await tokenProvider.GetBearerTokenAsync(ct);
+        var token = await tokenProvider.GetBearerTokenAsync(ct).ConfigureAwait(false);
 
         // Fire one request per profile in parallel. Same token works for all of them
         // — the profile is conveyed by the Profile-Id header, not by the auth.
@@ -45,7 +45,7 @@ public sealed class BetterwayDriverSearch(
             .Select(profile => SearchOneProfileAsync(profile, searchTerm, token, ct))
             .ToArray();
 
-        var perProfileHits = await Task.WhenAll(tasks);
+        var perProfileHits = await Task.WhenAll(tasks).ConfigureAwait(false);
 
         // Flatten: each profile may have returned multiple items. We keep all of them
         // tagged with the profile they came from.
@@ -81,10 +81,10 @@ public sealed class BetterwayDriverSearch(
 
         try
         {
-            using var response = await http.SendAsync(request, ct);
+            using var response = await http.SendAsync(request, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
-                var errorBody = await response.Content.ReadAsStringAsync(ct);
+                var errorBody = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
                 Debug.WriteLine($"[Betterway] Search failed for profile {profile}: {(int)response.StatusCode}. Body: {errorBody}");
                 // Don't throw — one profile failing shouldn't kill the whole search.
                 return Array.Empty<DriverSearchHit>();

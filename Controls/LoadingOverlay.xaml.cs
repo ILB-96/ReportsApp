@@ -1,16 +1,23 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace Reports.Controls
 {
     public partial class LoadingOverlay : UserControl
     {
-        private int _version;
+        private const int HideAnimationMs = 140;
+
+        private int _version;        // guards nested/overlapping scopes
+        private int _visualVersion;  // guards the hide animation race
         private long _shownAtTicks;
+        private CancellationTokenSource? _cts;
 
         public LoadingOverlay()
         {
@@ -19,44 +26,60 @@ namespace Reports.Controls
         }
 
         // ---- Public API ----
+
+        /// <summary>Raised when the user clicks Cancel. The token is already cancelled at this point.</summary>
         public event EventHandler? CancellationRequested;
 
-        public async Task ShowAsync(string message, string? detail = null)
-        {
-            Message = message;
-            Detail = detail;
-            IsOpen = true;
+        /// <summary>
+        /// Token for the currently active scope. <see cref="CancellationToken.None"/> when nothing is showing.
+        /// </summary>
+        public CancellationToken Token => _cts?.Token ?? CancellationToken.None;
 
-            // Let the show animation start before continuing (optional)
-            await Task.Yield();
+        public YieldAwaitable ShowAsync(string message, string? detail = null, bool cancelable = false)
+        {
+            StartSession(message, detail, cancelable);
+            return Task.Yield();
         }
 
         public async Task HideAsync()
         {
             IsOpen = false;
+            EndSession();
             await Task.Yield();
         }
 
         /// <summary>
-        /// Helper scope: using(...) shows overlay; dispose hides it (anti-flicker included).
+        /// using var scope = Loading.BeginScope("שולח נתונים…", cancelable: true);
+        /// await service.SubmitAsync(model, scope.Token);
         /// </summary>
-        public IDisposable BeginScope(string message, string? detail = null)
+        public LoadingScope BeginScope(string message, string? detail = null, bool cancelable = false)
         {
-            _ = ShowAsync(message, detail);
+            StartSession(message, detail, cancelable);
             var captured = ++_version;
-            return new Scope(this, captured);
+            return new LoadingScope(this, captured, Token);
         }
 
-        private sealed class Scope : IDisposable
+        public sealed class LoadingScope : IDisposable
         {
             private readonly LoadingOverlay _owner;
             private readonly int _capturedVersion;
             private bool _disposed;
 
-            public Scope(LoadingOverlay owner, int capturedVersion)
+            internal LoadingScope(LoadingOverlay owner, int capturedVersion, CancellationToken token)
             {
                 _owner = owner;
                 _capturedVersion = capturedVersion;
+                Token = token;
+            }
+
+            public CancellationToken Token { get; }
+
+            /// <summary>Update the message while the scope is running (e.g. between steps).</summary>
+            public void Report(string message, string? detail = null)
+            {
+                if (_disposed || _capturedVersion != _owner._version) return;
+                _owner.Message = message;
+                _owner.Detail = detail;
             }
 
             public void Dispose()
@@ -67,9 +90,38 @@ namespace Reports.Controls
             }
         }
 
+        // ---- Session handling ----
+
+        private void StartSession(string message, string? detail, bool cancelable)
+        {
+            // A previous scope may still be alive; replacing it is intentional.
+            _cts?.Dispose();
+            _cts = new CancellationTokenSource();
+
+            Message = message;
+            Detail = detail;
+            IsCancelable = cancelable;
+
+            CancelButton.IsEnabled = true;
+
+            // Re-setting IsOpen to the same value doesn't raise the DP callback,
+            // so refresh the timestamp explicitly for back-to-back scopes.
+            _shownAtTicks = Stopwatch.GetTimestamp();
+
+            if (IsOpen)
+                UpdateComputedVisibilities();
+            else
+                IsOpen = true;
+        }
+
+        private void EndSession()
+        {
+            _cts?.Dispose();
+            _cts = null;
+        }
+
         private async Task HideIfLatestAsync(int capturedVersion)
         {
-            // Only hide if nobody else has shown it since.
             if (capturedVersion != _version) return;
 
             var minMs = MinimumShowTimeMilliseconds;
@@ -82,10 +134,13 @@ namespace Reports.Controls
             }
 
             if (capturedVersion != _version) return;
+
             IsOpen = false;
+            EndSession();
         }
 
         // ---- Dependency Properties ----
+
         public static readonly DependencyProperty IsOpenProperty =
             DependencyProperty.Register(nameof(IsOpen), typeof(bool), typeof(LoadingOverlay),
                 new PropertyMetadata(false, OnIsOpenChanged));
@@ -108,17 +163,18 @@ namespace Reports.Controls
 
         public static readonly DependencyProperty DetailProperty =
             DependencyProperty.Register(nameof(Detail), typeof(string), typeof(LoadingOverlay),
-                new PropertyMetadata(string.Empty, OnDetailChanged));
+                new PropertyMetadata(string.Empty, OnVisualStateChanged));
 
         public string? Detail
         {
-            get => (string)GetValue(DetailProperty);
+            get => (string?)GetValue(DetailProperty);
             set => SetValue(DetailProperty, value);
         }
 
         public static readonly DependencyProperty OverlayBackgroundProperty =
             DependencyProperty.Register(nameof(OverlayBackground), typeof(Brush), typeof(LoadingOverlay),
-                new PropertyMetadata(new SolidColorBrush(Color.FromArgb(0x80, 0x00, 0x00, 0x00))));
+                new PropertyMetadata(new SolidColorBrush(Color.FromArgb(0x80, 0x00, 0x00, 0x00)),
+                    OnVisualStateChanged));
 
         public Brush OverlayBackground
         {
@@ -128,9 +184,9 @@ namespace Reports.Controls
 
         public static readonly DependencyProperty IsBlockingProperty =
             DependencyProperty.Register(nameof(IsBlocking), typeof(bool), typeof(LoadingOverlay),
-                new PropertyMetadata(true));
+                new PropertyMetadata(true, OnVisualStateChanged));
 
-        /// <summary>When true, overlay blocks clicks under it.</summary>
+        /// <summary>When true, the backdrop swallows clicks aimed at the content underneath.</summary>
         public bool IsBlocking
         {
             get => (bool)GetValue(IsBlockingProperty);
@@ -139,7 +195,7 @@ namespace Reports.Controls
 
         public static readonly DependencyProperty IsCancelableProperty =
             DependencyProperty.Register(nameof(IsCancelable), typeof(bool), typeof(LoadingOverlay),
-                new PropertyMetadata(false, OnCancelableChanged));
+                new PropertyMetadata(false, OnVisualStateChanged));
 
         public bool IsCancelable
         {
@@ -157,6 +213,17 @@ namespace Reports.Controls
             set => SetValue(CancelTextProperty, value);
         }
 
+        public static readonly DependencyProperty CancelingMessageProperty =
+            DependencyProperty.Register(nameof(CancelingMessage), typeof(string), typeof(LoadingOverlay),
+                new PropertyMetadata("מבטל…"));
+
+        /// <summary>Shown after Cancel is clicked, while the operation unwinds.</summary>
+        public string CancelingMessage
+        {
+            get => (string)GetValue(CancelingMessageProperty);
+            set => SetValue(CancelingMessageProperty, value);
+        }
+
         public static readonly DependencyProperty MinimumShowTimeMillisecondsProperty =
             DependencyProperty.Register(nameof(MinimumShowTimeMilliseconds), typeof(int), typeof(LoadingOverlay),
                 new PropertyMetadata(250));
@@ -168,40 +235,30 @@ namespace Reports.Controls
             set => SetValue(MinimumShowTimeMillisecondsProperty, value);
         }
 
-        // ---- Computed visibility helpers (no converters needed) ----
-        public Visibility CancelVisibility => IsCancelable ? Visibility.Visible : Visibility.Collapsed;
-
-        public Visibility HasDetailVisibility =>
-            string.IsNullOrWhiteSpace(Detail) ? Visibility.Collapsed : Visibility.Visible;
+        // ---- Visual state ----
 
         private static void OnIsOpenChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            var c = (LoadingOverlay)d;
-            c.ApplyIsOpen((bool)e.NewValue);
-        }
+            => ((LoadingOverlay)d).ApplyIsOpen((bool)e.NewValue);
 
-        private static void OnCancelableChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            ((LoadingOverlay)d).UpdateComputedVisibilities();
-        }
-
-        private static void OnDetailChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            ((LoadingOverlay)d).UpdateComputedVisibilities();
-        }
+        private static void OnVisualStateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+            => ((LoadingOverlay)d).UpdateComputedVisibilities();
 
         private void UpdateComputedVisibilities()
         {
-            CancelButton.Visibility = CancelVisibility;
-            // Detail TextBlock visibility is bound to HasDetailVisibility property,
-            // but we also want immediate UI update without needing converters/INPC.
-            // Force binding refresh by re-setting DataContext to self.
-            DataContext = null;
-            DataContext = this;
+            CancelButton.Visibility = IsCancelable ? Visibility.Visible : Visibility.Collapsed;
+
+            DetailText.Visibility = string.IsNullOrWhiteSpace(Detail)
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+
+            // Null background => hit testing falls through the backdrop to the page,
+            // while the Card (which has a brush) still receives the Cancel click.
+            OverlayRoot.Background = IsBlocking ? OverlayBackground : null;
         }
 
         private async void ApplyIsOpen(bool open)
         {
+            var version = ++_visualVersion;
             UpdateComputedVisibilities();
 
             if (open)
@@ -209,27 +266,39 @@ namespace Reports.Controls
                 _shownAtTicks = Stopwatch.GetTimestamp();
                 OverlayRoot.Visibility = Visibility.Visible;
 
-                if (Resources["ShowStoryboard"] is System.Windows.Media.Animation.Storyboard show)
+                if (Resources["ShowStoryboard"] is Storyboard show)
                     show.Begin();
-
-                await Task.Yield();
             }
             else
             {
-                // if already collapsed, do nothing
                 if (OverlayRoot.Visibility != Visibility.Visible)
                     return;
 
-                if (Resources["HideStoryboard"] is System.Windows.Media.Animation.Storyboard hide)
+                if (Resources["HideStoryboard"] is Storyboard hide)
                     hide.Begin();
 
-                await Task.Delay(160);
+                await Task.Delay(HideAnimationMs);
+
+                // Something re-opened us while the hide animation was running.
+                if (version != _visualVersion)
+                    return;
+
                 OverlayRoot.Visibility = Visibility.Collapsed;
             }
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
+            if (_cts is null || _cts.IsCancellationRequested) return;
+
+            _cts.Cancel();
+
+            // Cancellation is cooperative — the work keeps going until it reaches the
+            // next check, so stay visible and just reflect that we're winding down.
+            CancelButton.IsEnabled = false;
+            Message = CancelingMessage;
+            Detail = null;
+
             CancellationRequested?.Invoke(this, EventArgs.Empty);
         }
     }

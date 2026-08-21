@@ -30,7 +30,7 @@ public sealed class BetterwayVehicleSearch(
 
         Debug.WriteLine($"[Betterway] Vehicle search start. Plate={plate}");
 
-        var token = await tokenProvider.GetBearerTokenAsync(ct);
+        var token = await tokenProvider.GetBearerTokenAsync(ct).ConfigureAwait(false);
         var body = new VehicleSearchRequest(plate);
 
         // GET with a body (matches the captured request). If the server rejects it, switch to HttpMethod.Post.
@@ -41,15 +41,15 @@ public sealed class BetterwayVehicleSearch(
 
         try
         {
-            using var response = await http.SendAsync(request, ct);
+            using var response = await http.SendAsync(request, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
-                var err = await response.Content.ReadAsStringAsync(ct);
+                var err = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
                 Debug.WriteLine($"[Betterway] Vehicle search HTTP {(int)response.StatusCode} for plate {plate}: {err}");
                 throw new InvalidOperationException($"line 49 Betterway vehicle search failed ({(int)response.StatusCode}).");
             }
 
-            var parsed = await response.Content.ReadFromJsonAsync<VehicleSearchResponse>(JsonOptions, ct);
+            var parsed = await response.Content.ReadFromJsonAsync<VehicleSearchResponse>(JsonOptions, ct).ConfigureAwait(false);
             var item = parsed?.Items is { Count: > 0 } items ? items[0] : null;
             if (item is null)
             {

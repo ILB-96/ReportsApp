@@ -8,7 +8,7 @@ namespace Reports.Services.Incident;
 
 public interface IIncidentDraftService
 {
-    Task<ParkingFinePayload> LoadDraftAsync(CreateIncidentView.IncidentRequestData request, CancellationToken ct = default);
+    Task<ParkingFinePayload?> LoadDraftAsync(CreateIncidentView.IncidentRequestData request, CancellationToken ct = default);
 }
 
 public sealed class IncidentDraftService(
@@ -25,7 +25,7 @@ public sealed class IncidentDraftService(
         "מזהה עיריה", "תאריך אימות"
     ];
 
-    public async Task<ParkingFinePayload> LoadDraftAsync(CreateIncidentView.IncidentRequestData request,
+    public async Task<ParkingFinePayload?> LoadDraftAsync(CreateIncidentView.IncidentRequestData request,
         CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(request.Url))
@@ -52,7 +52,7 @@ public sealed class IncidentDraftService(
             7 => $"{digits[..2]}-{digits[2..5]}-{digits[5..]}",   // 2-3-2 for 7-digit plates
             _ => digits
         };
-        var vehicle = await crm.GetVehicleByPlateAsync(formatted);
+        var vehicle = await crm.GetVehicleByPlateAsync(formatted, ct);
         if (vehicle is null || !vehicle.TryGetValue("value", out var v) || v is not JsonElement value)
             return null;
 
@@ -62,7 +62,7 @@ public sealed class IncidentDraftService(
         var s = value[0].TryGetProperty("new_vehicleid", out var id)
             ? id.GetString()
             : null;
-        var accountId = await crm.ExtractCrmAccountId(request.Url);
+        var accountId = await crm.ExtractCrmAccountId(request.Url, ct);
         
         fineData = fineData with
         {

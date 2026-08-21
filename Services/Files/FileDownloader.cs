@@ -3,7 +3,7 @@ using System.Net.Http;
 using PdfSharpCore.Pdf;
 using PdfSharpCore.Pdf.IO;
 using PdfSharpCore.Drawing;
-using PdfSharpCore.Pdf;
+
 namespace Reports.Services.Files;
 
 public static class FileDownloader
@@ -25,15 +25,15 @@ public static class FileDownloader
 
         if (string.IsNullOrWhiteSpace(ext))
         {
-            var bytes = await resp.Content.ReadAsByteArrayAsync();
+            var bytes = await resp.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
             ext = SniffExtension(bytes) ?? "";
-            await File.WriteAllBytesAsync(Path.Combine(targetFolder, newNameWithoutExt + ext), bytes);
+            await File.WriteAllBytesAsync(Path.Combine(targetFolder, newNameWithoutExt + ext), bytes).ConfigureAwait(false);
             return;
         }
 
         var targetPath = Path.Combine(targetFolder, newNameWithoutExt + ext);
         await using var fs = File.Create(targetPath);
-        await resp.Content.CopyToAsync(fs);
+        await resp.Content.CopyToAsync(fs).ConfigureAwait(false);
     }
 
 

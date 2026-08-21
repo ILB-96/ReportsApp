@@ -45,7 +45,7 @@ public sealed class BetterwayNewDriver(
     {
         Debug.WriteLine($"[Betterway] ImportDriver start. Profile={profile} ({(int)profile}), Plate={payload.PlateNumber}, Id={payload.IdNumber}");
 
-        var token = await tokenProvider.GetBearerTokenAsync(ct);
+        var token = await tokenProvider.GetBearerTokenAsync(ct).ConfigureAwait(false);
         Debug.WriteLine($"[Betterway] Got bearer token (length={token.Length}, prefix={token[..Math.Min(12, token.Length)]}...)");
 
         // Serialize once so we can both log it and send it. JsonContent.Create defers
@@ -63,8 +63,8 @@ public sealed class BetterwayNewDriver(
 
         Debug.WriteLine($"[Betterway] Sending POST {http.BaseAddress}api/Drivers/Import");
 
-        using var response = await http.SendAsync(request, ct);
-        var responseBody = await response.Content.ReadAsStringAsync(ct);
+        using var response = await http.SendAsync(request, ct).ConfigureAwait(false);
+        var responseBody = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
 
         Debug.WriteLine($"[Betterway] Response: {(int)response.StatusCode} {response.ReasonPhrase}");
         Debug.WriteLine($"[Betterway] Response body: {responseBody}");

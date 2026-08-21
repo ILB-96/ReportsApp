@@ -11,14 +11,14 @@
              ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
              Foreground="{DynamicResource TextFillColorPrimaryBrush}"
              mc:Ignorable="d" d:DataContext="{d:DesignInstance }">
-    <Grid Margin="5" VerticalAlignment="Top" >
+    <Grid Margin="5" >
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- Card with form -->
-        <ui:Card Grid.Row="1" Padding="20" Margin="0,0,0,10" Background="Transparent" Visibility="{Binding View.InputPanelVisibility}">
+        <ui:Card VerticalAlignment="Top" Grid.Row="1" Padding="20" Margin="0,0,0,10" Background="Transparent" Visibility="{Binding View.InputPanelVisibility}">
             <Grid Grid.IsSharedSizeScope="True" FlowDirection="RightToLeft">
                 <Grid.ColumnDefinitions>
                     <!-- Pair #1 -->
@@ -262,6 +262,8 @@
         <controls:LoadingOverlay x:Name="Loading"
                                  Grid.Row="0"
                                  Grid.RowSpan="2"
+                                 VerticalAlignment="Stretch"
+                                 HorizontalAlignment="Stretch"
                                  IsCancelable="False"
                                  MinimumShowTimeMilliseconds="250"/>
         <controls:OverlayBanner x:Name="Overlay" Grid.Row="0"

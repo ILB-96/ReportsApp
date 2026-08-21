@@ -37,13 +37,13 @@ public sealed class BetterwayClientSearch(
 
         Console.WriteLine($"[Betterway] Client SearchAllProfiles start. Term={searchTerm}");
 
-        var token = await tokenProvider.GetBearerTokenAsync(ct);
+        var token = await tokenProvider.GetBearerTokenAsync(ct).ConfigureAwait(false);
 
         var tasks = AllProfiles
             .Select(profile => SearchOneProfileAsync(profile, searchTerm, token, ct))
             .ToArray();
 
-        var perProfileHits = await Task.WhenAll(tasks);
+        var perProfileHits = await Task.WhenAll(tasks).ConfigureAwait(false);
 
         var allHits = perProfileHits
             .SelectMany(x => x)
@@ -77,16 +77,16 @@ public sealed class BetterwayClientSearch(
 
         try
         {
-            using var response = await http.SendAsync(request, ct);
+            using var response = await http.SendAsync(request, ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
-                var errorBody = await response.Content.ReadAsStringAsync(ct);
+                var errorBody = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
                 Console.WriteLine($"[Betterway] Client search failed for profile {profile}: {(int)response.StatusCode}. Body: {errorBody}");
                 return Array.Empty<ClientSearchHit>();
             }
 
-            var parsed = await response.Content.ReadFromJsonAsync<ClientSearchResponse>(JsonOptions, ct);
+            var parsed = await response.Content.ReadFromJsonAsync<ClientSearchResponse>(JsonOptions, ct).ConfigureAwait(false);
             var items = parsed?.Items ?? new List<BetterwayClient>();
 
             Console.WriteLine($"[Betterway] Client search profile {profile}: {items.Count} hit(s)");

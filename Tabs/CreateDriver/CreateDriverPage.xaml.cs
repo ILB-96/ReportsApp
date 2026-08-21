@@ -23,7 +23,6 @@ public partial class CreateDriverPage : Page
     private readonly ICrmBrandResolver _brandResolver;
     private readonly IBetterwayDriverSearch _betterwayDriverSearch;
     private readonly IBetterwayClientSearch _betterwayClientSearch;
-    
     public ChromeSyncStore SyncStore { get; }
     public IReadOnlyList<string> ServiceTypes { get; }
 
@@ -56,57 +55,64 @@ public partial class CreateDriverPage : Page
     {
         try
         {
-            using (Loading.BeginScope("מיצא את פרטי הנהג... רגע סבלנות", "זה יכול לקחת עד כמה שניות..."))
+            using var scope = Loading.BeginScope(
+                "מייצא את פרטי הנהג... רגע סבלנות",
+                "זה יכול לקחת עד כמה שניות...",
+                cancelable: true);
+            var ct = scope.Token;
+            var (draft, reservation) = await _driverDraftService.LoadDraftAsync(View.ToDraftRequest(), ct);
+            View.FillFromReservation(reservation);
+            View.FillFromDraft(draft);
+
+            var driversResult = await _betterwayDriverSearch.SearchAllProfilesAsync(draft.Phone, ct);
+
+
+            DriverSearchHit? chosen = null;
+            switch (driversResult.AllHits.Count)
             {
-                var (draft, reservation) = await _driverDraftService.LoadDraftAsync(View.ToDraftRequest());
-                View.FillFromReservation(reservation);
-                View.FillFromDraft(draft);
-                
-                var driversResult = await _betterwayDriverSearch.SearchAllProfilesAsync(draft.Phone);
-
-                
-                DriverSearchHit? chosen = null;
-                switch (driversResult.AllHits.Count)
+                case 1:
                 {
-                    case 1:
-                    {
-                        chosen = driversResult.AllHits[0];
-                        var profilesList = string.Join(", ", driversResult.ProfilesWithMatch);
-                        MessageBox.Show(
-                            $"Driver found in: {profilesList}",
-                            "Driver found!",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-                        break;
-                    }
-                    case > 1:
-                    {
-                        var picked = await PickDriverAsync(driversResult.AllHits);
-                        if (picked is null) return; // user cancelled
-                        chosen = picked;
-                        break;
-                    }
-                }
-                
-                if (chosen is not null)
-                {
-                    View.FillFromDriver(chosen.Driver);
-                }
-                
-                var clientsResult = await _betterwayClientSearch.SearchAllProfilesAsync(View.DriverId);
-
-                if (clientsResult.AllHits.Count >= 1)
-                {
-                    var profilesList = string.Join(", ", clientsResult.ProfilesWithMatch); // was driversResult
+                    chosen = driversResult.AllHits[0];
+                    var profilesList = string.Join(", ", driversResult.ProfilesWithMatch);
                     MessageBox.Show(
-                        $"Client found in: {profilesList}",
-                        "Client found!",
+                        $"Driver found in: {profilesList}",
+                        "Driver found!",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
+                    break;
                 }
-                
-                View.ShowData();
+                case > 1:
+                {
+                    var picked = await PickDriverAsync(driversResult.AllHits);
+                    if (picked is null) return; 
+                    chosen = picked;
+                    break;
+                }
             }
+
+            if (chosen is not null)
+            {
+                View.FillFromDriver(chosen.Driver);
+            }
+
+            var clientsResult = await _betterwayClientSearch.SearchAllProfilesAsync(View.DriverId, ct);
+
+            if (clientsResult.AllHits.Count >= 1)
+            {
+                var profilesList = string.Join(", ", clientsResult.ProfilesWithMatch); // was driversResult
+                MessageBox.Show(
+                    $"Client found in: {profilesList}",
+                    "Client found!",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+
+            ct.ThrowIfCancellationRequested();
+            View.ShowData();
+        }
+        catch (OperationCanceledException ex)
+        {
+            await Overlay.ShowAsync(false, "ביטול ידני על ידי המשתמש.");
         }
         catch (Exception ex)
         {
